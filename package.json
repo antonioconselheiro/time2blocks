@@ -1,5 +1,5 @@
 {
-  "name": "time2blocks",
+  "name": "@belomonte/time2blocks",
   "version": "0.0.2",
   "description": "identify which time is associated which blockchain block in the past",
   "main": "index.js",
