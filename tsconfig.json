@@ -8,7 +8,7 @@
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
     "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
-    "outDir": "dist",
+    "outDir": "dist/indexed",
 
     /* Type Checking */
     "sourceMap": true,
