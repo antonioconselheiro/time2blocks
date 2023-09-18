@@ -58,7 +58,7 @@ The files for this environment are in the `.devcontainer` folder, where you can 
 - with node installed;
 - with keyboard configured for Brazilian Portuguese;
 - with America/Sao_Paulo timezone;
-- the node tools: typescript and jest;
+- the node tools: typescript, jest and gulp;
 - In `.devcontainer/devcontainer.json` you can see a set of extensions for vscode libraries and tools used in the project.
 
 ### Devcontainer VSCode Extensions
