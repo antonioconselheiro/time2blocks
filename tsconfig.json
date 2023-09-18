@@ -31,7 +31,6 @@
     "**/*.spec.ts"
   ],
   "include": [
-    "**/*.ts",
-    "src/history.ts"
+    "**/*.ts"
   ]
 }
