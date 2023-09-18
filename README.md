@@ -15,12 +15,7 @@
 TypeScript library that identify which time is associated which blockchain block in the past.
 
 ## Donate
-Do you want more protests in favor of free speech, freedom of software and freedom of work similar to this one?
-
-This client nostr is a demonstration of a fraction of my power, as I have no funding other than my goodwill, with a contribution in satoshis you help me fund other products.
-
-Any open source that has its code physically decentralized around the world is likely to be a perpetual service to every human being with access to technology.
-
+Help me continue working on tools for the bitcoin and nostr universe, like this one #zapthedev
 There's still a lot of work to do.
 
 Lighting donate: <a href="lightning:peevedbeer57@walletofsatoshi.com">lightning:peevedbeer57@walletofsatoshi.com</a>

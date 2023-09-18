@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc src"
+    "build": "gulp build"
   },
   "keywords": [
     "time",
@@ -19,6 +19,12 @@
     "calc-js": "^2.0.7"
   },
   "devDependencies": {
+    "gulp": "4.0.2",
+    "gulp-concat": "2.6.1",
+    "gulp-minify": "3.1.0",
+    "gulp-rename": "2.0.0",
+    "gulp-sourcemaps": "2.6.5",
+    "gulp-typescript": "6.0.0-alpha.1",
     "@babel/preset-env": "^7.22.20",
     "@babel/preset-typescript": "^7.22.15",
     "@jest/globals": "^29.7.0",
