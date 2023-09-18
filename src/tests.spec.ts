@@ -2,11 +2,12 @@ import { time2Blocks } from '.';
 
 describe('raw time 2 blocks', () => {
   test('indexed time', () => {
-    expect(time2Blocks.getFromTimestamp(1650540572)).toBe(732861);
+    expect(time2Blocks.getHistoryFromTimestamp(1694632075)).toBe(807507);
   });
   
+  
   test('not indexed time', () => {
-    expect(time2Blocks.getFromTimestamp(1650540582)).toBe(732861);
+    expect(time2Blocks.getHistoryFromTimestamp(1694632076)).toBe(807507);
   });
 });
 

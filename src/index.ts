@@ -1,3 +1,4 @@
+import { Time2BlocksFormat } from './format';
 import { Time2BlocksHistoryLoader } from './history';
 
 export * from './format';
@@ -17,6 +18,7 @@ export class Time2Blocks {
   }
 
   private readonly historyService = Time2BlocksHistoryLoader.getInstance();
+  private readonly formatService = Time2BlocksFormat.getInstance();
 
   constructor() { return Time2Blocks.getInstance(this); }
 
@@ -26,9 +28,13 @@ export class Time2Blocks {
     if (block) {
       return block;
     } else {
-      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(history));
+      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
       return timeKey && this.historyService.history[timeKey] || null;
     }
+  }
+
+  format(block: number, format: string, numberSeparator = ','): string {
+    return this.formatService.format(block, format, numberSeparator);
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {

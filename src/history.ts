@@ -30,11 +30,11 @@ export class Time2BlocksHistoryLoader {
 
   constructor() { return Time2BlocksHistoryLoader.getInstance(this); }
 
-  setIndex(history: TBlockchainTimeHistory) {
+  setIndex(history: TBlockchainTimeHistory): void {
     this.history = history;
   }
 
-  updateIndex(history: TBlockchainTimeHistory) {
+  updateIndex(history: TBlockchainTimeHistory): void {
     this.history = { ...this.history, ...history };
   }
 
