@@ -1,9 +1,5 @@
 import { Calc } from 'calc-js';
-const history: TBlockchainTimeHistory = require('./history.json');
-
-export type TBlockchainTimeHistory = {
-  [time: string]: number
-};
+import { history } from './history';
 
 export class Time2Blocks {
 
