@@ -1,10 +1,9 @@
 # time2blocks
 
-[![npm version](https://badge.fury.io/js/time2blocks.svg)](https://badge.fury.io/js/time2blocks)
-[![Npm Total Downloads](https://img.shields.io/npm/dt/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
-[![Npm Monthly Downloads](https://img.shields.io/npm/dm/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
+[![npm version](https://badge.fury.io/js/@belomonte/time2blocks.svg)](https://badge.fury.io/js/@belomonte/time2blocks)
+[![Npm Total Downloads](https://img.shields.io/npm/dt/@belomonte/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
+[![Npm Monthly Downloads](https://img.shields.io/npm/dm/@belomonte/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
 [![Build Status](https://travis-ci.org/antonioconselheiro/time2blocks.svg?branch=master)](https://travis-ci.org/antonioconselheiro/time2blocks)
-[![Open Source Love](https://badges.frapsoft.com/os/mit/mit.svg?v=102)](https://github.com/antonioconselheiro/time2blocks/blob/documentation/LICENSE)
 
 #### Provérbios 10
 <span style="font-size:11px;font-style:italic;">
