@@ -19,26 +19,17 @@ export class Time2Blocks {
     return this.instance;
   }
 
+  loading: Array<Promise<any>> = [];
+
   private readonly historyService = Time2BlocksHistoryLoader.getInstance();
   private readonly formatService = Time2BlocksFormat.getInstance();
 
   constructor() { return Time2Blocks.getInstance(this); }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
-    let block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
-    }
-
-    const { start, end } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
-    block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
-    }
-
-    await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start, end);
-    block = this.getHistoryFromTimestamp(timestamp);
-    return Promise.resolve(block);
+    const promise = this.loadFromTimestamp(timestamp);
+    this.loading.push(promise);
+    return promise;
   }
 
   getFromMillisecondsTimestamp(timestamp: number): Promise<number | null> {
@@ -58,6 +49,24 @@ export class Time2Blocks {
         .multiply(secondsInMinute)
         .finish()
     );
+  }
+
+  private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
+    await Promise.all([].concat(this.loading));
+    let block = this.getHistoryFromTimestamp(timestamp);
+    if (block !== null) {
+      return Promise.resolve(block);
+    }
+
+    const { start, end } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
+    block = this.getHistoryFromTimestamp(timestamp);
+    if (block !== null) {
+      return Promise.resolve(block);
+    }
+
+    await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start, end);
+    block = this.getHistoryFromTimestamp(timestamp);
+    return Promise.resolve(block);
   }
 
   getHistoryFromTimestamp(timestamp: number): number | null {

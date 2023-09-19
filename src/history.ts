@@ -1,6 +1,6 @@
 import { Calc } from 'calc-js';
 import { calcConfig } from './calc-config';
-var websocket = require('websocket');
+import WebSocket from 'ws';
 
 export type TBlockchainTimeHistory = {
   [time: string]: number
@@ -185,18 +185,20 @@ export abstract class Time2BlockConnection {
   abstract close(): void;
 }
 
-export abstract class Time2BlockWebsocketConnection extends Time2BlockConnection {
-  protected abstract readonly link;
+export class Time2BlockMempoolConn extends Time2BlockConnection {
 
-  protected client = new websocket.client;
+  protected readonly link = 'wss://mempool.space/api/v1/ws';
+
+  protected client = new WebSocket(this.link);
   protected conn = null;
 
   constructor() {
     super();
-
     this.client.on('connect', (conn: any) => this.onConnect(conn));
-    this.client.on('connectFailed', () => console.error(`connection to ${this.link} failed`));
-    this.connect();
+  }
+
+  connect(): void {
+    this.client.connect(this.link);
   }
 
   protected onConnect(conn: any): void {
@@ -208,28 +210,6 @@ export abstract class Time2BlockWebsocketConnection extends Time2BlockConnection
 
     this.blockSubscribe();
   }
-
-  protected abstract blockSubscribe(): void;
-  protected abstract onMessage(packet: any): void;
-
-  close(): void {
-    if (this.conn) {
-      this.conn.close();
-    }
-  }
-
-  private onClose(): void {
-    this.conn = null;
-  }
-
-  connect(): void {
-    this.client.connect(this.link);
-  }
-}
-
-export class Time2BlockMempoolConn extends Time2BlockWebsocketConnection {
-
-  protected readonly link = 'wss://mempool.space/api/v1/ws';
 
   protected blockSubscribe(): void {
     this.conn.sendUTF(JSON.stringify({ "action": "init" }));
@@ -246,6 +226,16 @@ export class Time2BlockMempoolConn extends Time2BlockWebsocketConnection {
 
     if (packet.type != 'utf8')
       return;
+  }
+
+  close(): void {
+    if (this.conn) {
+      this.conn.close();
+    }
+  }
+
+  private onClose(): void {
+    this.conn = null;
   }
 }
 
