@@ -58,13 +58,19 @@ export class Time2Blocks {
       return Promise.resolve(block);
     }
 
-    const { start, end } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
+    const { start: start1, end: end1 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
     block = this.getHistoryFromTimestamp(timestamp);
     if (block !== null) {
       return Promise.resolve(block);
     }
 
-    await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start, end);
+    const { start: start2, end: end2 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start1, end1);
+    block = this.getHistoryFromTimestamp(timestamp);
+    if (block !== null) {
+      return Promise.resolve(block);
+    }
+
+    await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start2, end2);
     block = this.getHistoryFromTimestamp(timestamp);
     return Promise.resolve(block);
   }
