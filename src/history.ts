@@ -12,6 +12,7 @@ export class Time2BlocksHistoryLoader {
   static getInstance(newInstance?: Time2BlocksHistoryLoader): Time2BlocksHistoryLoader {
     if (!this.instance) {
       this.instance = newInstance || new Time2BlocksHistoryLoader();
+      this.instance.update().then(() => this.instance.listenMempool());
     }
 
     return this.instance;
@@ -24,10 +25,11 @@ export class Time2BlocksHistoryLoader {
   private readonly mempoolApi = 'https://mempool.space/api/';
 
   mempoolConn: Time2BlockMempoolConn | null = null;
-  blockchainInfoConn: Time2BlocksBlockchainInfoConn | null = null;
   listening = false;
 
-  constructor() { return Time2BlocksHistoryLoader.getInstance(this); }
+  constructor() {
+    return Time2BlocksHistoryLoader.getInstance(this);
+  }
 
   setIndex(history: TBlockchainTimeHistory): void {
     this.history = history;
@@ -58,17 +60,8 @@ export class Time2BlocksHistoryLoader {
     this.mempoolConn.onBlock(block => this.addBlock(block.height, block.timestamp))
   }
 
-  listenBlockchainInfo(): void {
-    this.listening = true;
-    this.blockchainInfoConn = new Time2BlocksBlockchainInfoConn();
-    this.blockchainInfoConn.onBlock(block => this.addBlock(block.height, block.timestamp))
-  }
-
   listen(): void {
     this.listening = true;
-    if (this.blockchainInfoConn) {
-      this.blockchainInfoConn.connect();
-    }
 
     if (this.mempoolConn) {
       this.mempoolConn.connect();
@@ -77,9 +70,6 @@ export class Time2BlocksHistoryLoader {
 
   stopListen(): void {
     this.listening = false;
-    if (this.blockchainInfoConn) {
-      this.blockchainInfoConn.close();
-    }
 
     if (this.mempoolConn) {
       this.mempoolConn.close();
@@ -116,6 +106,15 @@ export class Time2BlocksHistoryLoader {
       start: resultStart,
       end: resultEnd
     });
+  }
+
+
+  private async update(): Promise<void> {
+    const response = await fetch(`${this.mempoolApi}v1/blocks/`);
+    const updaten = await response.json();
+    updaten.forEach(block => this.addBlock(block.height, block.timestamp));
+
+    return Promise.resolve();
   }
 
   async getBlock(height: number): Promise<{ height: number, timestamp: string }> {
@@ -246,28 +245,6 @@ export class Time2BlockMempoolConn extends Time2BlockWebsocketConnection {
 
     if (packet.type != 'utf8')
       return;
-  }
-}
-
-export class Time2BlocksBlockchainInfoConn extends Time2BlockWebsocketConnection {
-  protected readonly link = 'wss://ws.blockchain.info/inv';
-
-  protected blockSubscribe(): void {
-    const encoded = JSON.stringify({ op: "blocks_sub" });
-    this.conn.sendUTF(encoded);
-  }
-
-  protected onMessage(packet: any): void {
-    if (packet.type != 'utf8')
-      return;
-
-    const packetParsed = JSON.parse(packet.utf8Data);
-    const { op } = packetParsed;
-
-    if (op == 'blocks') {
-      const { x: { height, time } } = packetParsed;
-      this.emit({ height, time });
-    }
   }
 }
 
