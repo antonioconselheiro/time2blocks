@@ -1,4 +1,6 @@
-import { time2Blocks } from '.';
+import { Time2Blocks } from '.';
+
+const time2Blocks = Time2Blocks.getInstance(false);
 
 describe('raw time 2 blocks', () => {
   test('indexed time', () => {

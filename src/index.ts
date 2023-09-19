@@ -11,9 +11,9 @@ export class Time2Blocks {
 
   private static instance: Time2Blocks | null = null;
 
-  static getInstance(newInstance?: Time2Blocks): Time2Blocks {
+  static getInstance(isOnline = true, newInstance?: Time2Blocks): Time2Blocks {
     if (!this.instance) {
-      this.instance = newInstance || new Time2Blocks();
+      this.instance = newInstance || new Time2Blocks(isOnline);
     }
 
     return this.instance;
@@ -21,10 +21,21 @@ export class Time2Blocks {
 
   loading: Array<Promise<any>> = [];
 
-  private readonly historyService = Time2BlocksHistoryLoader.getInstance();
+  private readonly historyService!: Time2BlocksHistoryLoader;
   private readonly formatService = Time2BlocksFormat.getInstance();
 
-  constructor() { return Time2Blocks.getInstance(this); }
+  constructor(
+    private isOnline = true
+  ) {
+    if (!this.isOnline) {
+      this.historyService = Time2BlocksHistoryLoader.getInstance(false);
+      this.historyService.offline();
+    } else {
+      this.historyService = Time2BlocksHistoryLoader.getInstance();
+    }
+
+    return Time2Blocks.getInstance(isOnline, this);
+  }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
     const promise = this.loadFromTimestamp(timestamp);
@@ -56,6 +67,10 @@ export class Time2Blocks {
     let block = this.getHistoryFromTimestamp(timestamp);
     if (block !== null) {
       return Promise.resolve(block);
+    }
+
+    if (!this.isOnline) {
+      return Promise.resolve(null);
     }
 
     const { start: start1, end: end1 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
@@ -126,6 +141,11 @@ export class Time2Blocks {
     } else {
       return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(0, middle));
     }
+  }
+
+  offline(): void {
+    this.isOnline = false;
+    this.historyService.offline();
   }
 }
 

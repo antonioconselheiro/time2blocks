@@ -11,7 +11,6 @@
 [![Npm Monthly Downloads](https://img.shields.io/npm/dm/@belomonte/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
 [![Build Status](https://travis-ci.org/antonioconselheiro/time2blocks.svg?branch=master)](https://travis-ci.org/antonioconselheiro/time2blocks)
 
-
 _____
 
 TypeScript library that identify which time is associated which blockchain block in the past.
@@ -19,10 +18,10 @@ The main purpose of the library is to provide a means for nostr clients to enabl
 
 ## Instalation
 
-For full lib (16mb, because include a great block_x_timestamp index file), you must load the ```history.json``` file to load it:
+For full lib (16mb, because include a grande file with a lot of block number and timestamp indexed), you must load the ```history.json``` file to load it, this is how install:
 ```npm install @belomonte/time2blocks --save```
 
-Without this index (130kb):
+Light version, without the index file (130kb):
 ```npm install @belomonte/time2blocks-light --save```
 
 Lib for Angular usage:
@@ -56,11 +55,23 @@ run().catch(e => console.error(e))
 
 ### Load indexed data
 ```typescript
-import { time2Blocks } from '@belomonte/time2blocks-light';
+import { Time2Blocks } from '@belomonte/time2blocks-light';
 
 //  if you include node_modules/@belomonte/time2blocks/history.json as a project asset
 fetch('node_modules/@belomonte/time2blocks/history.json')
-  .then(dataIndexed => this.time2Blocks.setIndex(dataIndexed))
+  .then(dataIndexed => Time2Blocks.getInstance().setIndex(dataIndexed))
+```
+
+### Offline mode
+In offline mode the lib will not connect to mempool and you'll need to feed the history by yourself
+
+```typescript
+import { Time2Blocks } from '@belomonte/time2blocks-light';
+const time2blocks = Time2Blocks.getInstance(false);
+
+//  or you can set in the instance
+time2blocks.offline();
+
 ```
 
 ### Formats

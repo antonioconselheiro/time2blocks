@@ -9,8 +9,9 @@ import { calcConfig } from "./calc-config";
  * the block to be formatted
  *
  * @param format
- * h - halvings
- * H - halvings too, but now h is in uppercase
+ * h - current halving
+ * H - next halving
+ * -h - last halving
  * B - all blocks
  * BB - All blocks in format 0,000,000
  * b - blocks in this halving
@@ -69,10 +70,19 @@ export class Time2BlocksFormat {
   }
 
   private formatHalvings(block: number, format: string): string {
-    if (Time2BlocksUtil.hasHalving.test(format)) {
-      const halving = this.getHalvingFromBlocks(block);
+    const halving = this.getHalvingFromBlocks(block);
 
+    if (Time2BlocksUtil.hasLastHalving.test(format)) {
+      const lastHalving = halving - 1;
+      format = format.replace(Time2BlocksUtil.hasLastHalving, String(lastHalving < 0 ? 0 : lastHalving));
+    }
+
+    if (Time2BlocksUtil.hasHalving.test(format)) {
       format = format.replace(Time2BlocksUtil.hasHalving, String(halving));
+    }
+
+    if (Time2BlocksUtil.hasNextHalving.test(format)) {
+      format = format.replace(Time2BlocksUtil.hasNextHalving, String(halving + 1));
     }
 
     return format;

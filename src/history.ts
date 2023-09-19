@@ -9,10 +9,13 @@ export type TBlockchainTimeHistory = {
 export class Time2BlocksHistoryLoader {
   private static instance: Time2BlocksHistoryLoader | null = null;
 
-  static getInstance(newInstance?: Time2BlocksHistoryLoader): Time2BlocksHistoryLoader {
+  static getInstance(isOnline = true, newInstance?: Time2BlocksHistoryLoader): Time2BlocksHistoryLoader {
     if (!this.instance) {
       this.instance = newInstance || new Time2BlocksHistoryLoader();
-      this.instance.update().then(() => this.instance.listenMempool());
+
+      if (isOnline) {
+        this.instance.update().then(() => this.instance.listenMempool());
+      }
     }
 
     return this.instance;
@@ -28,10 +31,12 @@ export class Time2BlocksHistoryLoader {
   private lastBlock: { block: number, time: string } | null = null;
 
   listening = false;
-  updating?: [Promise<void>];
+  updating: Promise<void>[] = [];
 
-  constructor() {
-    return Time2BlocksHistoryLoader.getInstance(this);
+  constructor(
+    private isOnline = true
+  ) {
+    return Time2BlocksHistoryLoader.getInstance(isOnline, this);
   }
 
   setIndex(history: TBlockchainTimeHistory): void {
@@ -174,6 +179,10 @@ export class Time2BlocksHistoryLoader {
 
     return estimatedBlock;
   }
+
+  offline(): void {
+
+  }
 }
 
 export class WebSocketFacade {
@@ -183,9 +192,7 @@ export class WebSocketFacade {
   clientWeb?: WebSocket;
   clientNode?: WebSocketNode;
 
-  constructor(
-    private conn: string
-  ) { 
+  constructor(conn: string) { 
     this.init(conn);
   }
 
@@ -215,9 +222,9 @@ export class WebSocketFacade {
 
   onMessage(calle: (message?: string) => void) {
     if (this.clientWeb) {
-      this.clientWeb.onmessage = (ev: MessageEvent<any>) => calle(String(ev.data));
+      this.clientWeb.onmessage = (ev: MessageEvent<any>) => calle(JSON.parse(ev.data));
     } else if (this.clientNode) {
-      this.clientNode.on('message', calle);
+      this.clientNode.on('message', (message: string) => calle(JSON.parse(message)));
     }
   }
 
