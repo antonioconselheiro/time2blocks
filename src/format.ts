@@ -1,5 +1,6 @@
 import { Calc } from "calc-js";
 import { Time2BlocksUtil } from "./util";
+import { calcConfig } from "./calc-config";
 
 /**
  * Format blocks
@@ -58,7 +59,7 @@ export class Time2BlocksFormat {
   }
 
   private getHalvingFromBlocks(block: number): number {
-    return new Calc(block)
+    return new Calc(block, calcConfig)
       .divide(Time2BlocksUtil.blocksPerHalving)
       .pipe(v => Math.floor(v))
       .finish();
@@ -122,8 +123,8 @@ export class Time2BlocksFormat {
     const halving = this.getHalvingFromBlocks(block);
 
     //  blocksInThisHalving = blocks - (halving / 210_000)
-    return new Calc(block).minus(
-      new Calc(halving)
+    return new Calc(block, calcConfig).minus(
+      new Calc(halving, calcConfig)
         .multiply(Time2BlocksUtil.blocksPerHalving)
         .finish()
     ).finish();
@@ -133,7 +134,7 @@ export class Time2BlocksFormat {
     const fullPercent = 100;
 
     //  rawPercent = thisHalvingBlock / 210_000
-    const rawPercent = new Calc(thisHalvingBlock)
+    const rawPercent = new Calc(thisHalvingBlock, calcConfig)
       .divide(Time2BlocksUtil.blocksPerHalving)
       .multiply(fullPercent)
       .finish();
@@ -162,9 +163,9 @@ export class Time2BlocksFormat {
     
     if (isToNextHalving) {
       const fullPercent = 100;
-      calc = new Calc(fullPercent).minus(rawPercent);
+      calc = new Calc(fullPercent, calcConfig).minus(rawPercent);
     } else {
-      calc = new Calc(rawPercent)
+      calc = new Calc(rawPercent, calcConfig)
     }
       
     if (decimalBase !== null) {

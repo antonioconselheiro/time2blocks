@@ -1,4 +1,5 @@
 import { Calc } from 'calc-js';
+import { calcConfig } from './calc-config';
 var websocket = require('websocket');
 
 export type TBlockchainTimeHistory = {
@@ -147,25 +148,25 @@ export class Time2BlocksHistoryLoader {
       end = { height: endHeight, timestamp: endTimestamp };
     }
 
-    const blocksDifference = new Calc(end.height).minus(start.height).finish();
-    const timeDifference = new Calc(Number(end.timestamp))
+    const blocksDifference = new Calc(end.height, calcConfig).minus(start.height).finish();
+    const timeDifference = new Calc(Number(end.timestamp), calcConfig)
       .minus(Number(start.timestamp))
       .finish();
 
-    const estimatedTimeForEachBlock = new Calc(timeDifference)
+    const estimatedTimeForEachBlock = new Calc(timeDifference, calcConfig)
       .divide(blocksDifference)
       .finish();
 
-    const timeDifferenceBetweenReferenceAndArg = new Calc(timestamp)
+    const timeDifferenceBetweenReferenceAndArg = new Calc(timestamp, calcConfig)
       .minus(Number(start.timestamp))
       .finish();
 
-    const estimatedBlocksFromStartReference = new Calc(timeDifferenceBetweenReferenceAndArg)
+    const estimatedBlocksFromStartReference = new Calc(timeDifferenceBetweenReferenceAndArg, calcConfig)
       .divide(estimatedTimeForEachBlock)
       .pipe(v => Math.floor(v))
       .finish();
 
-    return new Calc(start.height).sum(estimatedBlocksFromStartReference).finish();
+    return new Calc(start.height, calcConfig).sum(estimatedBlocksFromStartReference).finish();
   }
 }
 
