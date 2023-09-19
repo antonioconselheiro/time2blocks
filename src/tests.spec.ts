@@ -24,7 +24,7 @@ describe('formatted blocks', () => {
 
   test('H and bb format', () => {
     const result = time2Blocks.format(block, 'H [halving], [block] bb');
-    expect(result).toBe('3 halving, block 102,861');
+    expect(result).toBe('4 halving, block 102,861');
   });
 
   test('B format', () => {
@@ -44,12 +44,12 @@ describe('formatted blocks', () => {
 
   test('raw percent', () => {
     const result = time2Blocks.format(block, 'H, %%%%');
-    expect(result).toBe('3, 48.98142857142857%');
+    expect(result).toBe('4, 48.98142857142857%');
   });
 
   test('percent formatted', () => {
     const result = time2Blocks.format(block, 'H, %%');
-    expect(result).toBe('3, 48.98%');
+    expect(result).toBe('4, 48.98%');
   });
 
   test('percent to next halving', () => {
@@ -66,7 +66,7 @@ describe('testing escape char []', () => {
   });
 
   test('[H] H', () => {
-    expect(time2Blocks.format(block, '[H] H')).toBe('H 3');
+    expect(time2Blocks.format(block, '[H] H')).toBe('H 4');
   });
 
   test('[b] b', () => {

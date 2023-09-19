@@ -11,7 +11,7 @@ export class Time2BlocksHistoryLoader {
 
   static getInstance(isOnline = true, newInstance?: Time2BlocksHistoryLoader): Time2BlocksHistoryLoader {
     if (!this.instance) {
-      this.instance = newInstance || new Time2BlocksHistoryLoader();
+      this.instance = newInstance || new Time2BlocksHistoryLoader(isOnline);
 
       if (isOnline) {
         this.instance.update().then(() => this.instance.listenMempool());
@@ -61,6 +61,7 @@ export class Time2BlocksHistoryLoader {
   }
 
   listenMempool(): void {
+    console.info('listenMempool');
     this.listening = true;
     this.mempoolConn = new Time2BlockMempoolConn();
     this.mempoolConn.onBlock(block => this.addBlock(block.height, block.timestamp))
@@ -115,6 +116,10 @@ export class Time2BlocksHistoryLoader {
   }
 
   private async update(): Promise<void> {
+    if (!this.isOnline) {
+      return Promise.resolve();
+    }
+
     const response = await fetch(`${this.mempoolApi}v1/blocks/`);
     const updaten = await response.json();
     updaten.forEach(block => this.addBlock(block.height, block.timestamp));
@@ -181,7 +186,7 @@ export class Time2BlocksHistoryLoader {
   }
 
   offline(): void {
-
+    this.isOnline = false;
   }
 }
 
@@ -272,10 +277,12 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
 
   protected readonly link = 'wss://mempool.space/api/v1/ws';
 
-  protected client?: WebSocketFacade = new WebSocketFacade(this.link);
+  protected client?: WebSocketFacade;
 
   constructor() {
+    console.info('Time2BlockMempoolConn instanciated');
     super();
+    this.connect();
     this.client.onOpen(() => this.onConnect());
   }
 

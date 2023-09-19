@@ -45,7 +45,9 @@ export class Time2BlocksFormat {
     return this.instance;
   }
 
-  constructor() { return Time2BlocksFormat.getInstance(this); }
+  constructor() {
+    return Time2BlocksFormat.getInstance(this);
+  }
 
   format(block: number, format: string, numberSeparator = ','): string {
 

@@ -25,13 +25,15 @@ export class Time2Blocks {
   private readonly formatService = Time2BlocksFormat.getInstance();
 
   constructor(
-    private isOnline = true
+    private isOnline: boolean
   ) {
-    if (!this.isOnline) {
+    if (this.isOnline) {
+      console.info('isOnline');
+      this.historyService = Time2BlocksHistoryLoader.getInstance();
+    } else {
+      console.info('isOffline');
       this.historyService = Time2BlocksHistoryLoader.getInstance(false);
       this.historyService.offline();
-    } else {
-      this.historyService = Time2BlocksHistoryLoader.getInstance();
     }
 
     return Time2Blocks.getInstance(isOnline, this);
@@ -148,6 +150,3 @@ export class Time2Blocks {
     this.historyService.offline();
   }
 }
-
-export const time2Blocks = new Time2Blocks();
-
