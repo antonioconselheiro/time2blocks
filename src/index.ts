@@ -1,3 +1,4 @@
+import { Calc } from 'calc-js';
 import { Time2BlocksFormat } from './format';
 import { Time2BlocksHistoryLoader } from './history';
 
@@ -29,8 +30,31 @@ export class Time2Blocks {
       return block;
     } else {
       const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
-      return timeKey && this.historyService.history[timeKey] || null;
+      const isValid = this.isValidTimeKey(timestamp, timeKey);
+
+      if (isValid) {
+        return this.historyService.history[timeKey];
+      }
+
+      return null;
     }
+  }
+
+  private isValidTimeKey(timestamp: number, timeKey: number): boolean {
+    const timeDifference = new Calc(timestamp)
+      .minus(timeKey)
+      .pipe(v => Math.sqrt(Math.pow(v, 2)))
+      .finish();
+
+    const secondsInMinute = 60;
+    const maxRangeMin = 19;
+    const maxRange = new Calc(secondsInMinute).multiply(maxRangeMin).finish();
+
+    if (timeDifference > maxRange) {
+      return false;
+    }
+
+    return true;
   }
 
   format(block: number, format: string, numberSeparator = ','): string {
@@ -58,11 +82,11 @@ export class Time2Blocks {
     return this.getFromTimestamp(timestamp / 1000);
   }
 
-  private getTimeWithBlockIndexedFromTime(timestamp: number, times: string[]): number | null {
+  private getTimeWithBlockIndexedFromTime(timestamp: number, times: string[]): number {
     if (times.length === 1) {
       return Number(times[0]);
     }
-  
+
     const middle = Math.floor(times.length / 2);
     if (Number(times[middle]) < timestamp) {
       return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(middle));
