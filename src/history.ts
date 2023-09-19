@@ -293,8 +293,13 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
     console.info('mempool packet', packet );
     const res = JSON.parse(packet.toString());
     if (res.block) {
-      const { height, time } = res.block;
-      this.emit({ height, time: String(time) });
+      const { height, timestamp } = res.block;
+      this.emit({ height, time: String(timestamp) });
+    } else if (res.blocks) {
+      res.blocks.forEach(block => {
+        const { height, timestamp } = block;
+        this.emit({ height, time: String(timestamp) });
+      });
     }
   }
 

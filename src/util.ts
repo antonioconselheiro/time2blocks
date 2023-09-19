@@ -1,6 +1,8 @@
 export class Time2BlocksUtil {
   static readonly blocksPerHalving = 210_000;
 
+  static readonly hasMinusb = /(-b\b)(?![^\[]*\])/g;
+  static readonly hasMinusbb = /(-bb)(?![^\[]*\])/g;
   static readonly hasHalving = /(h)(?![^\[]*\])/ig;
   static readonly hasb = /(\bb\b)(?![^\[]*\])/g;
   static readonly hasbb = /(bb)(?![^\[]*\])/g;

@@ -31,6 +31,7 @@ Lib for Angular usage:
 [I can reference here if you create a wrapper lib for nextjs, vuejs or react.]
 
 ## Usage
+### Sample code
 ```typescript
 import { time2Blocks } from '@belomonte/time2blocks-light';
 async function run() {
@@ -53,6 +54,16 @@ async function run() {
 run().catch(e => console.error(e))
 ```
 
+### Load indexed data
+```typescript
+import { time2Blocks } from '@belomonte/time2blocks-light';
+
+//  if you include node_modules/@belomonte/time2blocks/history.json as a project asset
+fetch('node_modules/@belomonte/time2blocks/history.json')
+  .then(dataIndexed => this.time2Blocks.setIndex(dataIndexed))
+```
+
+### Formats
 ![formats](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/docs/time2blocks.png)
 
 

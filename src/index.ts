@@ -87,9 +87,9 @@ export class Time2Blocks {
       if (isValid) {
         return this.historyService.history[timeKey];
       }
-
-      return null;
     }
+
+    return null;
   }
 
   private isValidTimeKey(timestamp: number, timeKey: number): boolean {

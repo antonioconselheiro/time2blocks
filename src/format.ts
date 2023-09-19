@@ -11,10 +11,12 @@ import { calcConfig } from "./calc-config";
  * @param format
  * h - halvings
  * H - halvings too, but now h is in uppercase
- * b - blocks in this halving
  * B - all blocks
- * bb - blocks in this halving in format 000,000
  * BB - All blocks in format 0,000,000
+ * b - blocks in this halving
+ * bb - blocks in this halving in format 000,000
+ * -b - blocks to next halving
+ * -bb - blocks to next halving in format 000,000
  *
  * % - blocks in this halving in percentage: 0.0% ~ 100.0%, 
  * %% - blocks in this halving in percentage: 0.00% ~ 100.00%, 
@@ -48,6 +50,7 @@ export class Time2BlocksFormat {
 
     const thisHalvingBlock = this.getThisHalvingBlocks(block);
     let formatted = this.formatHalvings(block, format);
+    formatted = this.formatBlocksToNextHalving(thisHalvingBlock, formatted);
     formatted = this.formatBlocksInThisHalving(thisHalvingBlock, formatted);
     formatted = this.formatTotalBlocks(block, formatted);
     formatted = this.formatBlocksInThisHalvingWithCommas(thisHalvingBlock, formatted, numberSeparator);
@@ -70,6 +73,22 @@ export class Time2BlocksFormat {
       const halving = this.getHalvingFromBlocks(block);
 
       format = format.replace(Time2BlocksUtil.hasHalving, String(halving));
+    }
+
+    return format;
+  }
+
+  private formatBlocksToNextHalving(block: number, format: string): string {
+    const toNextHalving = String(
+      new Calc(Time2BlocksUtil.blocksPerHalving).minus(block).finish()
+    );
+
+    if (Time2BlocksUtil.hasMinusbb.test(format)) {
+      format = format.replace(Time2BlocksUtil.hasMinusbb, toNextHalving);
+    }
+    
+    if (Time2BlocksUtil.hasMinusb.test(format)) {
+      format = format.replace(Time2BlocksUtil.hasMinusb, toNextHalving);
     }
 
     return format;
