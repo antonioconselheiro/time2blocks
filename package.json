@@ -1,6 +1,6 @@
 {
   "name": "@belomonte/time2blocks",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "identify which time is associated which blockchain block in the past",
   "main": "index.js",
   "scripts": {
@@ -19,8 +19,7 @@
   ],
   "author": "António Conselheiro",
   "license": "UNGOVERNABLE",
-  "dependencies": {
-    "@mempool/mempool.js": "^2.3.0",
+  "peerDependencies": {
     "calc-js": "^2.0.7",
     "websocket": "^1.0.34"
   },
