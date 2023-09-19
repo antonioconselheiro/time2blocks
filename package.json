@@ -1,6 +1,6 @@
 {
   "name": "@belomonte/time2blocks",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "identify which time is associated which blockchain block in the past",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,9 @@
   "author": "António Conselheiro",
   "license": "UNGOVERNABLE",
   "peerDependencies": {
-    "calc-js": "^2.0.7",
+    "calc-js": "^2.0.7"
+  },
+  "optionalDependencies": {
     "ws": "^8.14.2"
   },
   "devDependencies": {

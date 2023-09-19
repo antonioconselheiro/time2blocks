@@ -1,6 +1,7 @@
 import { Calc } from 'calc-js';
 import { calcConfig } from './calc-config';
-import WebSocket from 'ws';
+import { WebSocket as WebSocketNode } from 'ws';
+
 
 export type TBlockchainTimeHistory = {
   [time: string]: number
@@ -170,6 +171,76 @@ export class Time2BlocksHistoryLoader {
   }
 }
 
+export class WebSocketFacade {
+
+  private readonly hasWindow = typeof window !== 'undefined';
+
+  clientWeb?: WebSocket;
+  clientNode?: WebSocketNode;
+
+  constructor(
+    private conn: string
+  ) { 
+    this.init(conn);
+  }
+
+  private init(conn: string): void {
+    if (this.hasWindow) {
+      this.clientWeb = new (window.WebSocket || window['MozWebSocket'])(conn);
+    } else {
+      this.clientNode = new WebSocketNode(conn);
+    }
+  }
+
+  onOpen(calle: () => void) {
+    if (this.clientWeb) {
+      this.clientWeb.onopen = calle;
+    } else if (this.clientNode) {
+      this.clientNode.on('open', calle);
+    }
+  }
+
+  onError(calle: (error?: unknown) => void) {
+    if (this.clientWeb) {
+      this.clientWeb.onerror = calle;
+    } else if (this.clientNode) {
+      this.clientNode.on('error', calle);
+    }
+  }
+
+  onMessage(calle: (message?: string) => void) {
+    if (this.clientWeb) {
+      this.clientWeb.onmessage = (ev: MessageEvent<any>) => calle(String(ev.data));
+    } else if (this.clientNode) {
+      this.clientNode.on('message', calle);
+    }
+  }
+
+  onClose(calle: () => void) {
+    if (this.clientWeb) {
+      this.clientWeb.onclose = calle;
+    } else if (this.clientNode) {
+      this.clientNode.on('close', calle);
+    }
+  }
+
+  close(): void {
+    if (this.clientWeb) {
+      this.clientWeb.close();
+    } else if (this.clientNode) {
+      this.clientNode.close();
+    }
+  }
+
+  send(serialized: string): void {
+    if (this.clientWeb) {
+      this.clientWeb.send(serialized);
+    } else if (this.clientNode) {
+      this.clientNode.send(serialized);
+    }
+  }
+}
+
 export abstract class Time2BlockConnection {
   private subscriptions = [];
 
@@ -189,31 +260,28 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
 
   protected readonly link = 'wss://mempool.space/api/v1/ws';
 
-  protected client = new WebSocket(this.link);
-  protected conn = null;
+  protected client?: WebSocketFacade = new WebSocketFacade(this.link);
 
   constructor() {
     super();
-    this.client.on('connect', (conn: any) => this.onConnect(conn));
+    this.client.onOpen(() => this.onConnect());
   }
 
   connect(): void {
-    this.client.connect(this.link);
+    this.client = new WebSocketFacade(this.link);
   }
 
-  protected onConnect(conn: any): void {
-    this.conn = conn;
-
-    conn.on('close', () => this.onClose());
-    conn.on('message', packet => this.onMessage(packet));
-    conn.on('error', err => console.error('error', err));
+  protected onConnect(): void {
+    this.client.onClose(() => this.onClose());
+    this.client.onMessage(packet => this.onMessage(packet));
+    this.client.onError(err => console.error('error', err));
 
     this.blockSubscribe();
   }
 
   protected blockSubscribe(): void {
-    this.conn.sendUTF(JSON.stringify({ "action": "init" }));
-    this.conn.sendUTF(JSON.stringify({ "action": "want", "data": ['blocks'] }));
+    this.client.send(JSON.stringify({ "action": "init" }));
+    this.client.send(JSON.stringify({ "action": "want", "data": ['blocks'] }));
   }
 
   protected onMessage(packet: any): void {
@@ -223,19 +291,21 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
       const { height, time } = res.block;
       this.emit({ height, time: String(time) });
     }
-
-    if (packet.type != 'utf8')
-      return;
   }
 
   close(): void {
-    if (this.conn) {
-      this.conn.close();
+    if (this.client) {
+      this.client.close();
     }
   }
 
   private onClose(): void {
-    this.conn = null;
+    this.client = null;
   }
 }
 
+/**
+ * TODO:
+ * pendente de fazer uma versão pra websocket de browser e outra pra websocket de nodejs
+ * limitar a pesquisa de blocos para que o bloco minimo seja 1 e o máximo seja o último bloco processado
+ */

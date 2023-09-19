@@ -1,3 +1,9 @@
+#### Provérbios 10
+⁴ O preguiçoso fica pobre, mas quem se esforça no trabalho enriquece.
+⁵ Quem tem juízo colhe no tempo certo, mas quem dorme na época da colheita passa vergonha.
+⁶ Os bons são abençoados. As palavras dos maus escondem a sua violência.
+⁷ Os bons serão lembrados como uma bênção, porém os maus logo serão esquecidos.
+
 # Time2Blocks
 
 [![npm version](https://badge.fury.io/js/@belomonte%2Ftime2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
@@ -5,11 +11,6 @@
 [![Npm Monthly Downloads](https://img.shields.io/npm/dm/@belomonte/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
 [![Build Status](https://travis-ci.org/antonioconselheiro/time2blocks.svg?branch=master)](https://travis-ci.org/antonioconselheiro/time2blocks)
 
-#### Provérbios 10
-⁴ O preguiçoso fica pobre, mas quem se esforça no trabalho enriquece.
-⁵ Quem tem juízo colhe no tempo certo, mas quem dorme na época da colheita passa vergonha.
-⁶ Os bons são abençoados. As palavras dos maus escondem a sua violência.
-⁷ Os bons serão lembrados como uma bênção, porém os maus logo serão esquecidos.
 
 _____
 
@@ -39,10 +40,12 @@ async function run() {
   const sameBlockAgain = await time2Blocks.getFromMinutes(Math.floor(now / 60_000));
 
   const formatted = time2Blocks.format(block, 'H, bb');
-  const formatted = time2Blocks.format(sameBlock, 'h, B');
-  const formatted = time2Blocks.format(sameBlockAgain, '-%%% [to next halving]');
+  const formatted2 = time2Blocks.format(sameBlock, 'h, B');
+  const formatted3 = time2Blocks.format(sameBlockAgain, '-%%% [to next halving]');
 
   console.info('time as block, formatted: ', formatted);
+  console.info('time as block, formatted: ', formatted2);
+  console.info('time as block, formatted: ', formatted3);
 
   return Promise.resolve();
 }
