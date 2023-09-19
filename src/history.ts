@@ -24,8 +24,10 @@ export class Time2BlocksHistoryLoader {
 
   private readonly mempoolApi = 'https://mempool.space/api/';
 
-  mempoolConn: Time2BlockMempoolConn | null = null;
+  private mempoolConn: Time2BlockMempoolConn | null = null;
+
   listening = false;
+  updating?: [Promise<void>];
 
   constructor() {
     return Time2BlocksHistoryLoader.getInstance(this);
@@ -108,7 +110,6 @@ export class Time2BlocksHistoryLoader {
     });
   }
 
-
   private async update(): Promise<void> {
     const response = await fetch(`${this.mempoolApi}v1/blocks/`);
     const updaten = await response.json();
@@ -117,7 +118,7 @@ export class Time2BlocksHistoryLoader {
     return Promise.resolve();
   }
 
-  async getBlock(height: number): Promise<{ height: number, timestamp: string }> {
+  async loadBlock(height: number): Promise<{ height: number, timestamp: string }> {
     const responseHash = await fetch(`${this.mempoolApi}block-height/${height}`);
     const hash = await responseHash.json();
     const responseBlock = await fetch(`${this.mempoolApi}block/${hash}`);

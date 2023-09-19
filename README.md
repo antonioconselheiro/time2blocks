@@ -14,6 +14,49 @@
 _____
 
 TypeScript library that identify which time is associated which blockchain block in the past.
+The main purpose of the library is to provide a means for nostr clients to enable them to display which block a given message was published to.
+
+## Instalation
+
+For full lib (16mb, because include a great block_x_timestamp index file), you must load the ```history.json``` file to load it:
+```npm install @belomonte/time2blocks --save```
+
+Without this index (130kb):
+```npm install @belomonte/time2blocks-light --save```
+
+Lib for Angular usage:
+```npm install @belomonte/time2blocks-ngx --save```
+
+[I can reference here if you create a wrapper lib for nextjs, vuejs or react.]
+
+## Usage
+```typescript
+import { time2Blocks } from '@belomonte/time2blocks-light';
+async function run() {
+  const now = new Date().getTime();
+  const block = await time2Blocks.getFromMillisecondsTimestamp(now);
+  const sameBlock = await time2Blocks.getFromTimestamp(Math.floor(now / 1000));
+  const sameBlockAgain = await time2Blocks.getFromMinutes(Math.floor(now / 60_000));
+
+  const formatted = time2Blocks.format(block, 'H, bb');
+  const formatted = time2Blocks.format(sameBlock, 'h, B');
+  const formatted = time2Blocks.format(sameBlockAgain, '-%%% [to next halving]');
+
+  console.info('time as block, formatted: ', formatted);
+
+  return Promise.resolve();
+}
+
+run().catch(e => console.error(e))
+```
+
+![formats](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/docs/time2blocks.png)
+
+
+## Grow NOSTR
+To improve the library, it would be good:
+ - if a way to search for which blocks were processed around one moment (a timestamp) or more than one moment was available in the mempool api;
+ - be possible to include what the block was at the time of publication in NOSTR;
 
 ## Donate
 Help me continue working on tools for the bitcoin and nostr universe, like this one. #zapthedev
