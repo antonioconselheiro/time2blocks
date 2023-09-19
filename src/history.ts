@@ -136,8 +136,8 @@ export class Time2BlocksHistoryLoader {
   ): number {
     if (!start || !end) {
       let historyAsKeys: string[] | null = Object.keys(this.history);
-      const startTimestamp = historyAsKeys[historyAsKeys.length - 1];
-      const endTimestamp = historyAsKeys[historyAsKeys.length - 20];
+      const startTimestamp = historyAsKeys[historyAsKeys.length - 20]; // 1694680557
+      const endTimestamp = historyAsKeys[historyAsKeys.length - 1]; // 1694692419
 
       historyAsKeys = null;
 

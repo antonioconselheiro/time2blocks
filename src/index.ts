@@ -1,6 +1,7 @@
 import { Calc } from 'calc-js';
 import { Time2BlocksFormat } from './format';
 import { Time2BlocksHistoryLoader } from './history';
+import { calcConfig } from './calc-config';
 
 export * from './format';
 export * from './history';
@@ -23,44 +24,6 @@ export class Time2Blocks {
 
   constructor() { return Time2Blocks.getInstance(this); }
 
-  getHistoryFromTimestamp(timestamp: number): number | null {
-    const block = this.historyService.history[timestamp];
-
-    if (block) {
-      return block;
-    } else {
-      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
-      const isValid = this.isValidTimeKey(timestamp, timeKey);
-
-      if (isValid) {
-        return this.historyService.history[timeKey];
-      }
-
-      return null;
-    }
-  }
-
-  private isValidTimeKey(timestamp: number, timeKey: number): boolean {
-    const timeDifference = new Calc(timestamp)
-      .minus(timeKey)
-      .pipe(v => Math.sqrt(Math.pow(v, 2)))
-      .finish();
-
-    const secondsInMinute = 60;
-    const maxRangeMin = 19;
-    const maxRange = new Calc(secondsInMinute).multiply(maxRangeMin).finish();
-
-    if (timeDifference > maxRange) {
-      return false;
-    }
-
-    return true;
-  }
-
-  format(block: number, format: string, numberSeparator = ','): string {
-    return this.formatService.format(block, format, numberSeparator);
-  }
-
   async getFromTimestamp(timestamp: number): Promise<number | null> {
     let block = this.getHistoryFromTimestamp(timestamp);
     if (block !== null) {
@@ -79,7 +42,62 @@ export class Time2Blocks {
   }
 
   getFromMillisecondsTimestamp(timestamp: number): Promise<number | null> {
-    return this.getFromTimestamp(timestamp / 1000);
+    const millisecondInSecond = 1000;
+    return this.getFromTimestamp(
+      new Calc(timestamp, calcConfig)
+        .divide(millisecondInSecond)
+        .pipe(v => Math.floor(v))
+        .finish()
+    );
+  }
+
+  getHistoryFromMinutes(timestampInMinutes: number): Promise<number | null> {
+    const secondsInMinute = 60;
+    return this.getFromTimestamp(
+      new Calc(timestampInMinutes, calcConfig)
+        .multiply(secondsInMinute)
+        .finish()
+    );
+  }
+
+  getHistoryFromTimestamp(timestamp: number): number | null {
+    const block = this.historyService.history[timestamp];
+
+    if (block) {
+      return block;
+    } else {
+      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
+      const isValid = this.isValidTimeKey(timestamp, timeKey);
+
+      if (isValid) {
+        return this.historyService.history[timeKey];
+      }
+
+      return null;
+    }
+  }
+
+  private isValidTimeKey(timestamp: number, timeKey: number): boolean {
+    const timeDifference = new Calc(timestamp, calcConfig)
+      .minus(timeKey)
+      .pipe(v => Math.sqrt(Math.pow(v, 2)))
+      .finish();
+
+    const secondsInMinute = 60;
+    const maxRangeMin = 19;
+    const maxRange = new Calc(secondsInMinute, calcConfig)
+      .multiply(maxRangeMin)
+      .finish();
+
+    if (timeDifference > maxRange) {
+      return false;
+    }
+
+    return true;
+  }
+
+  format(block: number, format: string, numberSeparator = ','): string {
+    return this.formatService.format(block, format, numberSeparator);
   }
 
   private getTimeWithBlockIndexedFromTime(timestamp: number, times: string[]): number {
