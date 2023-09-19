@@ -28,10 +28,8 @@ export class Time2Blocks {
     private isOnline: boolean
   ) {
     if (this.isOnline) {
-      console.info('isOnline');
       this.historyService = Time2BlocksHistoryLoader.getInstance();
     } else {
-      console.info('isOffline');
       this.historyService = Time2BlocksHistoryLoader.getInstance(false);
       this.historyService.offline();
     }
@@ -41,7 +39,7 @@ export class Time2Blocks {
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
     const promise = this.loadFromTimestamp(timestamp);
-    this.loading.push(promise);
+    this.loading = [promise].concat(this.loading);
     return promise;
   }
 

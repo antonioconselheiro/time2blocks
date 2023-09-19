@@ -19,12 +19,15 @@ The main purpose of the library is to provide a means for nostr clients to enabl
 ## Instalation
 
 For full lib (16mb, because include a grande file with a lot of block number and timestamp indexed), you must load the ```history.json``` file to load it, this is how install:
+
 ```npm install @belomonte/time2blocks --save```
 
 Light version, without the index file (130kb):
+
 ```npm install @belomonte/time2blocks-light --save```
 
 Lib for Angular usage:
+
 ```npm install @belomonte/time2blocks-ngx --save```
 
 [I can reference here if you create a wrapper lib for nextjs, vuejs or react.]
