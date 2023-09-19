@@ -51,7 +51,7 @@ export class Time2Blocks {
     );
   }
 
-  getHistoryFromMinutes(timestampInMinutes: number): Promise<number | null> {
+  getFromMinutes(timestampInMinutes: number): Promise<number | null> {
     const secondsInMinute = 60;
     return this.getFromTimestamp(
       new Calc(timestampInMinutes, calcConfig)
