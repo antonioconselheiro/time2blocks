@@ -64,9 +64,9 @@ export class Time2Blocks {
 
   private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
     await Promise.all([].concat(this.loading));
-    let block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
+    let wrapper = this.getHistoryFromTimestamp(timestamp);
+    if ('block' in wrapper) {
+      return Promise.resolve(wrapper.block);
     }
 
     if (!this.isOnline) {
@@ -74,37 +74,37 @@ export class Time2Blocks {
     }
 
     const { start: start1, end: end1 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
-    block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
+    wrapper = this.getHistoryFromTimestamp(timestamp);
+    if ('block' in wrapper) {
+      return Promise.resolve(wrapper.block);
     }
 
     const { start: start2, end: end2 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start1, end1);
-    block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
+    wrapper = this.getHistoryFromTimestamp(timestamp);
+    if ('block' in wrapper) {
+      return Promise.resolve(wrapper.block);
     }
 
     await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start2, end2);
-    block = this.getHistoryFromTimestamp(timestamp);
-    return Promise.resolve(block);
+    wrapper = this.getHistoryFromTimestamp(timestamp);
+    return Promise.resolve('block' in wrapper && wrapper.block);
   }
 
-  getHistoryFromTimestamp(timestamp: number): number | null {
+  getHistoryFromTimestamp(timestamp: number): { block: number } | { blockA: number, blockB: number } {
     const block = this.historyService.history[timestamp];
 
     if (block) {
-      return block;
-    } else {
-      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
-      const isValid = this.isValidTimeKey(timestamp, timeKey);
-
-      if (isValid) {
-        return this.historyService.history[timeKey];
-      }
+      return { block };
     }
 
-    return null;
+    const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
+    const isValid = this.isValidTimeKey(timestamp, timeKey);
+
+    if (isValid) {
+      return { block: this.historyService.history[timeKey] };
+    }
+
+    return { blockA: timeKey, blockB: timeKey };
   }
 
   private isValidTimeKey(timestamp: number, timeKey: number): boolean {

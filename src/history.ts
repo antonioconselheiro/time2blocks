@@ -330,16 +330,37 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
 
 /**
  * TODO:
- * 1.1 linha 147, o start e end precisa vir sempre depois de uma busca e
- * deve usar o valor resultante da busca e o registro anterior para identificar
- * como deve ser feita a consulta de blocos na mempool
+ * Como deve ficar o algoritimo:
  * 
- * 1.2 Em algum local, se o tempo for desproporcional ao bloco (divergência de vinte
- * minutos se não me engano), está forçando o resultado para null, preciso retornar
- * o bloco mais próximo encontrado e usa-lo para consulta de blocos na mempool
+ * o bloco mais recente deve ser marcado como último bloco, para servir como referência;
  * 
- * 2. Garantir o funcionamento da exibição do bloco atual
+ * busca indexadas pode retornar bloco ou blocoA e blocoB sugerindo que haja uma consulta
+ * na mempool para atualização;
+ * 
+ * o blocoA e blocoB devem ser entregues a um algoritimo que calculará o seguinte:
+ * - a distancia de tempo entre a e b;
+ * - a distancia de blocos entre a e b;
+ * - com essas informações identificarei uma estimativa de quanto tempo demora para
+ * processar cada bloco na região de tempo consultada;
+ * - considerando a diferença de tempo entre o tempo do blocoA e o tempo solicitado e
+ * considerando a estimativa de quanto tempo demora para processar cada bloco se chega
+ * a um provavel bloco correspondente ao tempo passado;
+ * - a partir da informação do bloco estimado para o tempo solicitado é feita uma consulta
+ * na mempool para atualizar os blocos ao redor do bloco estimado;
+ * - a consulta é iniciada novamente com a expectativa de que o tempo entregue agora retorne
+ * um bloco indexado, por conta da atualização com a mempool, se este não for o caso, então
+ * uma nova consulta para atualização será feita na mempool;
+ * 
+ * IMPORTANTE: não se deve ocorrer diversas consultas em paralelo, todas as buscas no indice
+ * devem aguardar as requisições em curso para atualização dos dados, isso impede consultas
+ * repetidas simultâneas
+ * 
+ * 
+ * 
+ * 
+ * 2. Garantir o funcionamento da exibição do bloco atual sem formatação
  * 
  * 3. Retestar o comportamento do time2blocks quando não houvererem os dados
  * indexados e a distância de tempo for muito grande desde a última atualização
+ * 
  */
