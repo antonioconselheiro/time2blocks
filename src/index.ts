@@ -139,13 +139,8 @@ export class Time2Blocks {
     }
     
     const blockKeys = this.historyService.blockKeys;
-    if (!isBeforeBlockIndexed) {
-      const indexedBlock = this.getBlockIndexedFromBlock(blockBefore, blockKeys);
-      return { blockA: indexedBlock, blockB: block };
-    } else {
-      const indexedBlock = this.getBlockIndexedFromBlock(blockAfter, blockKeys);
-      return { blockA: block, blockB: indexedBlock };
-    }
+    const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
+    return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
   }
 
   format(block: number, format: string, numberSeparator = ','): string {
@@ -166,17 +161,26 @@ export class Time2Blocks {
     }
   }
 
-  private getBlockIndexedFromBlock(block: number, blocks: number[]): number {
-    if (blocks.length === 1) {
-      return Number(blocks[0]);
+  private getIndexedBlocksAroundBlock(block: number, blocks: number[]): [number, number] {
+    if (blocks.length < 10) {
+      return this.getBlocksAround(block, blocks);
     }
 
     const middle = Math.floor(blocks.length / 2);
     if (Number(blocks[middle]) < block) {
-      return this.getBlockIndexedFromBlock(block, blocks.splice(middle));
+      return this.getIndexedBlocksAroundBlock(block, blocks.splice(middle));
     } else {
-      return this.getBlockIndexedFromBlock(block, blocks.splice(0, middle));
+      return this.getIndexedBlocksAroundBlock(block, blocks.splice(0, middle));
     }
+  }
+
+  private getBlocksAround(block: number, blocks: number[]): [number, number] {
+    console.info('block', block, 'blocks', blocks);
+    const before = blocks.filter(minor => minor <= block);
+    const after = blocks.filter(major => major > block);
+    return [
+      before[before.length - 1], after[0]
+    ];
   }
 
   offline(): void {

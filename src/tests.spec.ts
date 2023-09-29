@@ -12,6 +12,14 @@ describe('raw time 2 blocks', () => {
     const result = time2Blocks.getBlockFromTimestamp(1694557399);
     expect('block' in result && result.block).toBe(807385);
   });
+
+  test('not indexed time', () => {
+    const result = time2Blocks.getBlockFromTimestamp(1690337500);
+    expect(result).toEqual({
+      blockA: 799384,
+      blockB: 800184
+    });
+  });
 });
 
 describe('formatted blocks', () => {
@@ -24,8 +32,8 @@ describe('formatted blocks', () => {
   });
 
   test('H and bb format', () => {
-    const result = time2Blocks.format(block, 'H [halving], [block] bb');
-    expect(result).toBe('4 halving, block 102,861');
+    const result = time2Blocks.format(block, '[block] bb, [next halving] H');
+    expect(result).toBe('block 102,861, next halving 4');
   });
 
   test('B format', () => {

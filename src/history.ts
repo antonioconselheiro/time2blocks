@@ -134,8 +134,8 @@ export class Time2BlocksHistoryLoader {
   }
 
   updateHistoryIndex(): void {
-    this.timestampKeys = Object.keys(this.history).sort();
-    this.blockKeys = Object.values(this.history).sort();
+    this.timestampKeys = Object.keys(this.history).sort((a, b) => Number(a) - Number(b));
+    this.blockKeys = Object.values(this.history).sort((a, b) => a - b);
     this.historyBlockIndexed = Object.fromEntries(Object.entries(this.history).map(([chave, valor]) => [valor, chave]));
   }
 
