@@ -4,11 +4,13 @@ const time2Blocks = Time2Blocks.getInstance(false);
 
 describe('raw time 2 blocks', () => {
   test('indexed time', () => {
-    expect(time2Blocks.getBlockFromTimestamp(1694557398)).toBe(807385);
+    const result = time2Blocks.getBlockFromTimestamp(1694557398);
+    expect('block' in result && result.block).toBe(807385);
   });
 
   test('not indexed time', () => {
-    expect(time2Blocks.getBlockFromTimestamp(1694557399)).toBe(807385);
+    const result = time2Blocks.getBlockFromTimestamp(1694557399);
+    expect('block' in result && result.block).toBe(807385);
   });
 });
 
