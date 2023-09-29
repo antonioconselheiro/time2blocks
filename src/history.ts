@@ -311,9 +311,8 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
     this.client.send(JSON.stringify({ "action": "want", "data": ['blocks'] }));
   }
 
-  protected onMessage(packet: any): void {
-    console.info('mempool packet', packet );
-    const res = JSON.parse(packet.toString());
+  protected onMessage(res: any): void {
+    console.info('mempool packet', res );
     if (res.block) {
       const { height, timestamp } = res.block;
       this.emit({ height, time: String(timestamp) });
