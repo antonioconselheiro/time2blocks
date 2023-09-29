@@ -26,10 +26,13 @@ export class Time2BlocksHistoryLoader {
   // 🔥🔥🔥🔥🔥🔥🔥
   history: TBlockchainTimeHistory = baseHistory;
 
+  timestampKeys = Object.keys(this.history).sort();
+  blockKeys = Object.values(this.history).sort();
+
   private readonly mempoolApi = 'https://mempool.space/api/';
 
   private mempoolConn: Time2BlockMempoolConn | null = null;
-  private lastBlock: { block: number, time: string } | null = null;
+  lastBlock: { block: number, time: string } | null = null;
 
   listening = false;
   updating: Promise<void>[] = [];
@@ -42,10 +45,12 @@ export class Time2BlocksHistoryLoader {
 
   setIndex(history: TBlockchainTimeHistory): void {
     this.history = history;
+    this.updateHistoryIndex();
   }
 
   updateIndex(history: TBlockchainTimeHistory): void {
     this.history = { ...this.history, ...history };
+    this.updateHistoryIndex();
   }
 
   addBlock(block: number, time: string): void {
@@ -53,11 +58,13 @@ export class Time2BlocksHistoryLoader {
       this.lastBlock = { block, time };
     }
     this.history[time] = block;
+    this.updateHistoryIndex();
   }
 
   async loadIndex(path?: string): Promise<void> {
     const response = await fetch(path || './history.json');
     this.history = await response.json();
+    this.updateHistoryIndex();
     return Promise.resolve();
   }
 
@@ -83,36 +90,17 @@ export class Time2BlocksHistoryLoader {
     }
   }
 
-  async getUpdateBlockNextToTimestamp(
+  async updateBlockNextToTimestamp(
     timestamp: number,
     start?: { height: number, timestamp: string },
     end?: { height: number, timestamp: string }
-  ): Promise<{
-    start?: { height: number, timestamp: string },
-    end?: { height: number, timestamp: string }
-  }> {
+  ): Promise<void> {
     const baseHeight = this.getEstimatedBlockFromTimestamp(timestamp, start, end);
     const response = await fetch(`${this.mempoolApi}v1/blocks/${baseHeight}`);
     const blocksList: Array<{ height: string, timestamp: string }> = await response.json();
 
     blocksList.forEach(({ height, timestamp }) => this.history[timestamp] = Number(height));
-
-    const lastBlock = blocksList.length - 1;
-
-    const resultStart = {
-      height: Number(blocksList[0].height),
-      timestamp: blocksList[0].timestamp
-    };
-
-    const resultEnd = {
-      height: Number(blocksList[lastBlock].height),
-      timestamp: blocksList[lastBlock].timestamp
-    };
-
-    return Promise.resolve({
-      start: resultStart,
-      end: resultEnd
-    });
+    this.updateHistoryIndex();
   }
 
   private async update(): Promise<void> {
@@ -135,7 +123,13 @@ export class Time2BlocksHistoryLoader {
 
     const metadata = { height, timestamp: String(timestamp) };
     this.history[metadata.timestamp] = metadata.height;
+    this.updateHistoryIndex();
     return Promise.resolve(metadata);
+  }
+
+  private updateHistoryIndex(): void {
+    this.timestampKeys = Object.keys(this.history).sort();
+    this.blockKeys = Object.values(this.history).sort();
   }
 
   getEstimatedBlockFromTimestamp(
@@ -182,6 +176,15 @@ export class Time2BlocksHistoryLoader {
       return this.lastBlock.block;
     }
 
+    console.info(
+      'timestamp: ', timestamp,
+      'blocksDifference: ', blocksDifference,
+      'timeDifference: ', timeDifference,
+      'estimatedTimeForEachBlock: ', estimatedTimeForEachBlock,
+      'timeDifferenceBetweenReferenceAndArg: ', timeDifferenceBetweenReferenceAndArg,
+      'estimatedBlocksFromStartReference: ', estimatedBlocksFromStartReference,
+      'estimatedBlock: ', estimatedBlock
+    );
     return estimatedBlock;
   }
 
@@ -326,7 +329,6 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
     this.client = null;
   }
 }
-
 
 /**
  * TODO:

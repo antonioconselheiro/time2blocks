@@ -19,7 +19,7 @@ export class Time2Blocks {
     return this.instance;
   }
 
-  loading: Array<Promise<any>> = [];
+  loading: Promise<number> | null = null;
 
   private readonly historyService!: Time2BlocksHistoryLoader;
   private readonly formatService = Time2BlocksFormat.getInstance();
@@ -38,9 +38,34 @@ export class Time2Blocks {
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
-    const promise = this.loadFromTimestamp(timestamp);
-    this.loading = [promise].concat(this.loading);
-    return promise;
+    // macgyverism
+    if (this.loading) {
+      const loading = this.loading;
+      const newLoading = this.loading = new Promise<number | null>(resolve => {
+        loading.then(() => {
+          return this.loadFromTimestamp(timestamp).then((v) => {
+            if (newLoading === this.loading) {
+              this.loading = null;
+            }
+
+            resolve(v);
+            return Promise.resolve(v);
+          });
+        });
+      });
+
+      return newLoading;
+    }
+
+    const newLoading = this.loading = this.loadFromTimestamp(timestamp);
+    this.loading.then((v) => {
+      if (newLoading === this.loading) {
+        this.loading = null;
+      }
+
+      return Promise.resolve(v);
+    });
+    return newLoading;
   }
 
   getFromMillisecondsTimestamp(timestamp: number): Promise<number | null> {
@@ -63,7 +88,7 @@ export class Time2Blocks {
   }
 
   private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
-    await Promise.all([].concat(this.loading));
+    //await Promise.all([].concat(this.loading));
     let wrapper = this.getHistoryFromTimestamp(timestamp);
     if ('block' in wrapper) {
       return Promise.resolve(wrapper.block);
@@ -73,63 +98,50 @@ export class Time2Blocks {
       return Promise.resolve(null);
     }
 
-    const { start: start1, end: end1 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
+    await this.historyService.updateBlockNextToTimestamp(timestamp);
     wrapper = this.getHistoryFromTimestamp(timestamp);
     if ('block' in wrapper) {
       return Promise.resolve(wrapper.block);
     }
 
-    const { start: start2, end: end2 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start1, end1);
-    wrapper = this.getHistoryFromTimestamp(timestamp);
-    if ('block' in wrapper) {
-      return Promise.resolve(wrapper.block);
-    }
-
-    await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start2, end2);
-    wrapper = this.getHistoryFromTimestamp(timestamp);
-    return Promise.resolve('block' in wrapper && wrapper.block);
+    return this.loadFromTimestamp(timestamp);
   }
 
   getHistoryFromTimestamp(timestamp: number): { block: number } | { blockA: number, blockB: number } {
-    const block = this.historyService.history[timestamp];
+    let block = this.historyService.history[timestamp];
 
-    if (block) {
+    const timestampKeys = this.historyService.timestampKeys;
+    const blockKeys = this.historyService.blockKeys;
+
+    if (!block) {
+      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, [].concat(timestampKeys));
+      block = this.historyService.history[timeKey];
+    }
+
+    const blockBefore = block - 1;
+    const blockAfter = block + 1;
+
+    const isBeforeBlockIndexed = this.isBlockIndexed(blockBefore, blockKeys);
+    const isAfterBlockIndexed = this.isBlockIndexed(blockAfter, blockKeys);
+
+    const lastBlock = this.historyService.lastBlock;
+
+    if (isBeforeBlockIndexed.indexed && isAfterBlockIndexed.indexed) {
       return { block };
+    } else if (!isBeforeBlockIndexed.indexed) {
+      return { blockA: isBeforeBlockIndexed.block, blockB: block };
+    } else if (!isAfterBlockIndexed.indexed) {
+      return { blockA: block, blockB: isAfterBlockIndexed.block };
+    } else if (lastBlock) {
+      return { blockA: block, blockB: lastBlock.block };
     }
-
-    const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
-    const isValid = this.isValidTimeKey(timestamp, timeKey);
-
-    if (isValid) {
-      return { block: this.historyService.history[timeKey] };
-    }
-
-    return { blockA: timeKey, blockB: timeKey };
-  }
-
-  private isValidTimeKey(timestamp: number, timeKey: number): boolean {
-    const timeDifference = new Calc(timestamp, calcConfig)
-      .minus(timeKey)
-      .pipe(v => Math.sqrt(Math.pow(v, 2)))
-      .finish();
-
-    const secondsInMinute = 60;
-    const maxRangeMin = 19;
-    const maxRange = new Calc(secondsInMinute, calcConfig)
-      .multiply(maxRangeMin)
-      .finish();
-
-    if (timeDifference > maxRange) {
-      return false;
-    }
-
-    return true;
   }
 
   format(block: number, format: string, numberSeparator = ','): string {
     return this.formatService.format(block, format, numberSeparator);
   }
 
+  /// 🔥🔥🔥🔥🔥🔥
   private getTimeWithBlockIndexedFromTime(timestamp: number, times: string[]): number {
     if (times.length === 1) {
       return Number(times[0]);
@@ -140,6 +152,19 @@ export class Time2Blocks {
       return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(middle));
     } else {
       return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(0, middle));
+    }
+  }
+
+  private isBlockIndexed(block: number, blocks: number[]): { indexed: boolean, block: number } {
+    if (blocks.length === 1) {
+      return { indexed: blocks[0] === block, block };
+    }
+
+    const middle = Math.floor(blocks.length / 2);
+    if (Number(blocks[middle]) < block) {
+      return this.isBlockIndexed(block, blocks.splice(middle));
+    } else {
+      return this.isBlockIndexed(block, blocks.splice(0, middle));
     }
   }
 
