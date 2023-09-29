@@ -88,8 +88,7 @@ export class Time2Blocks {
   }
 
   private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
-    //await Promise.all([].concat(this.loading));
-    let wrapper = this.getHistoryFromTimestamp(timestamp);
+    let wrapper = this.getBlockFromTimestamp(timestamp);
     if ('block' in wrapper) {
       return Promise.resolve(wrapper.block);
     }
@@ -98,8 +97,11 @@ export class Time2Blocks {
       return Promise.resolve(null);
     }
 
-    await this.historyService.updateBlockNextToTimestamp(timestamp);
-    wrapper = this.getHistoryFromTimestamp(timestamp);
+    const start = this.getBlockWithDateFromIndexedBlock(wrapper.blockA);
+    const end = this.getBlockWithDateFromIndexedBlock(wrapper.blockB);
+
+    await this.historyService.updateBlockNextToTimestamp(timestamp, start, end);
+    wrapper = this.getBlockFromTimestamp(timestamp);
     if ('block' in wrapper) {
       return Promise.resolve(wrapper.block);
     }
@@ -107,33 +109,42 @@ export class Time2Blocks {
     return this.loadFromTimestamp(timestamp);
   }
 
-  getHistoryFromTimestamp(timestamp: number): { block: number } | { blockA: number, blockB: number } {
+  private getBlockWithDateFromIndexedBlock(indexedBlock: number): {
+    height: number;
+    timestamp: string;
+  } {
+    const timestamp = this.historyService.historyBlockIndexed[indexedBlock];
+    return { height: indexedBlock, timestamp };
+  }
+
+  getBlockFromTimestamp(timestamp: number): { block: number } | { blockA: number, blockB: number } {
     let block = this.historyService.history[timestamp];
 
-    const timestampKeys = this.historyService.timestampKeys;
-    const blockKeys = this.historyService.blockKeys;
-
-    if (!block) {
-      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, [].concat(timestampKeys));
-      block = this.historyService.history[timeKey];
+    if (block) {
+      return { block };
     }
+
+    const timestampKeys = this.historyService.timestampKeys;
+    const timeKey = this.getTimeIndexedFromTime(timestamp, [].concat(timestampKeys));
+    block = this.historyService.history[timeKey];
 
     const blockBefore = block - 1;
     const blockAfter = block + 1;
 
-    const isBeforeBlockIndexed = this.isBlockIndexed(blockBefore, blockKeys);
-    const isAfterBlockIndexed = this.isBlockIndexed(blockAfter, blockKeys);
+    const isBeforeBlockIndexed = !!this.historyService.historyBlockIndexed[blockBefore];
+    const isAfterBlockIndexed =  !!this.historyService.historyBlockIndexed[blockAfter];
 
-    const lastBlock = this.historyService.lastBlock;
-
-    if (isBeforeBlockIndexed.indexed && isAfterBlockIndexed.indexed) {
+    if (isBeforeBlockIndexed && isAfterBlockIndexed) {
       return { block };
-    } else if (!isBeforeBlockIndexed.indexed) {
-      return { blockA: isBeforeBlockIndexed.block, blockB: block };
-    } else if (!isAfterBlockIndexed.indexed) {
-      return { blockA: block, blockB: isAfterBlockIndexed.block };
-    } else if (lastBlock) {
-      return { blockA: block, blockB: lastBlock.block };
+    }
+    
+    const blockKeys = this.historyService.blockKeys;
+    if (!isBeforeBlockIndexed) {
+      const indexedBlock = this.getBlockIndexedFromBlock(blockBefore, blockKeys);
+      return { blockA: indexedBlock, blockB: block };
+    } else {
+      const indexedBlock = this.getBlockIndexedFromBlock(blockAfter, blockKeys);
+      return { blockA: block, blockB: indexedBlock };
     }
   }
 
@@ -142,29 +153,29 @@ export class Time2Blocks {
   }
 
   /// 🔥🔥🔥🔥🔥🔥
-  private getTimeWithBlockIndexedFromTime(timestamp: number, times: string[]): number {
+  private getTimeIndexedFromTime(timestamp: number, times: string[]): number {
     if (times.length === 1) {
       return Number(times[0]);
     }
 
     const middle = Math.floor(times.length / 2);
     if (Number(times[middle]) < timestamp) {
-      return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(middle));
+      return this.getTimeIndexedFromTime(timestamp, times.splice(middle));
     } else {
-      return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(0, middle));
+      return this.getTimeIndexedFromTime(timestamp, times.splice(0, middle));
     }
   }
 
-  private isBlockIndexed(block: number, blocks: number[]): { indexed: boolean, block: number } {
+  private getBlockIndexedFromBlock(block: number, blocks: number[]): number {
     if (blocks.length === 1) {
-      return { indexed: blocks[0] === block, block };
+      return Number(blocks[0]);
     }
 
     const middle = Math.floor(blocks.length / 2);
     if (Number(blocks[middle]) < block) {
-      return this.isBlockIndexed(block, blocks.splice(middle));
+      return this.getBlockIndexedFromBlock(block, blocks.splice(middle));
     } else {
-      return this.isBlockIndexed(block, blocks.splice(0, middle));
+      return this.getBlockIndexedFromBlock(block, blocks.splice(0, middle));
     }
   }
 

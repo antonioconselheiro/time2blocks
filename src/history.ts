@@ -7,6 +7,10 @@ export type TBlockchainTimeHistory = {
   [time: string]: number
 };
 
+export type TBlockchainBlocksHistory = {
+  [block: string]: string
+};
+
 export class Time2BlocksHistoryLoader {
   private static instance: Time2BlocksHistoryLoader | null = null;
 
@@ -14,6 +18,7 @@ export class Time2BlocksHistoryLoader {
     if (!this.instance) {
       this.instance = newInstance || new Time2BlocksHistoryLoader(isOnline);
 
+      this.instance.updateHistoryIndex();
       if (isOnline) {
         this.instance.update().then(() => this.instance.listenMempool());
       }
@@ -26,8 +31,9 @@ export class Time2BlocksHistoryLoader {
   // 🔥🔥🔥🔥🔥🔥🔥
   history: TBlockchainTimeHistory = baseHistory;
 
-  timestampKeys = Object.keys(this.history).sort();
-  blockKeys = Object.values(this.history).sort();
+  historyBlockIndexed!: TBlockchainBlocksHistory;
+  timestampKeys!: string[];
+  blockKeys!: number[];
 
   private readonly mempoolApi = 'https://mempool.space/api/';
 
@@ -92,8 +98,8 @@ export class Time2BlocksHistoryLoader {
 
   async updateBlockNextToTimestamp(
     timestamp: number,
-    start?: { height: number, timestamp: string },
-    end?: { height: number, timestamp: string }
+    start: { height: number, timestamp: string },
+    end: { height: number, timestamp: string }
   ): Promise<void> {
     const baseHeight = this.getEstimatedBlockFromTimestamp(timestamp, start, end);
     const response = await fetch(`${this.mempoolApi}v1/blocks/${baseHeight}`);
@@ -127,30 +133,17 @@ export class Time2BlocksHistoryLoader {
     return Promise.resolve(metadata);
   }
 
-  private updateHistoryIndex(): void {
+  updateHistoryIndex(): void {
     this.timestampKeys = Object.keys(this.history).sort();
     this.blockKeys = Object.values(this.history).sort();
+    this.historyBlockIndexed = Object.fromEntries(Object.entries(this.history).map(([chave, valor]) => [valor, chave]));
   }
 
   getEstimatedBlockFromTimestamp(
     timestamp: number,
-    start?: { height: number, timestamp: string },
-    end?: { height: number, timestamp: string }
+    start: { height: number, timestamp: string },
+    end: { height: number, timestamp: string }
   ): number {
-    if (!start || !end) {
-      let historyAsKeys: string[] | null = Object.keys(this.history);
-      const startTimestamp = historyAsKeys[historyAsKeys.length - 20]; // 1694680557
-      const endTimestamp = historyAsKeys[historyAsKeys.length - 1]; // 1694692419
-
-      historyAsKeys = null;
-
-      const startHeight = this.history[startTimestamp];
-      const endHeight = this.history[endTimestamp];
-
-      start = { height: startHeight, timestamp: startTimestamp };
-      end = { height: endHeight, timestamp: endTimestamp };
-    }
-
     const blocksDifference = new Calc(end.height, calcConfig).minus(start.height).finish();
     const timeDifference = new Calc(Number(end.timestamp), calcConfig)
       .minus(Number(start.timestamp))
