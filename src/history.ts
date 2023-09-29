@@ -162,11 +162,13 @@ export class Time2BlocksHistoryLoader {
 
     const timeDifferenceBetweenReferenceAndArg = new Calc(timestamp, calcConfig)
       .minus(Number(start.timestamp))
+      .pipe(v => Math.sqrt(Math.pow(v, 2)))
       .finish();
 
     const estimatedBlocksFromStartReference = new Calc(timeDifferenceBetweenReferenceAndArg, calcConfig)
       .divide(estimatedTimeForEachBlock)
       .pipe(v => Math.floor(v))
+      .pipe(v => Math.sqrt(Math.pow(v, 2)))
       .finish();
 
     const estimatedBlock = new Calc(start.height, calcConfig).sum(estimatedBlocksFromStartReference).finish();
