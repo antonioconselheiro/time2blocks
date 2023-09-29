@@ -157,6 +157,7 @@ export class Time2BlocksHistoryLoader {
 
     const estimatedTimeForEachBlock = new Calc(timeDifference, calcConfig)
       .divide(blocksDifference)
+      .pipe(v => Math.floor(v))
       .finish();
 
     const timeDifferenceBetweenReferenceAndArg = new Calc(timestamp, calcConfig)

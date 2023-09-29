@@ -42,6 +42,7 @@ export class Time2Blocks {
       const loading = this.loading;
       const newLoading = this.loading = new Promise<number | null>(resolve => {
         loading.then(() => {
+          console.info('loadFromTimestamp(timestamp)', timestamp);
           return this.loadFromTimestamp(timestamp).then((v) => {
             if (newLoading === this.loading) {
               this.loading = null;
@@ -120,10 +121,16 @@ export class Time2Blocks {
     if (isBeforeBlockIndexed && isAfterBlockIndexed) {
       return { block };
     }
-    
+
     const blockKeys = this.historyService.blockKeys;
-    const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
-    return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
+    if (!isBeforeBlockIndexed) {
+      const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
+      return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
+    } else {
+      const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockAfter, blockKeys);
+      return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
+    }
+    
   }
 
   format(block: number, format: string, numberSeparator = ','): string {
@@ -175,7 +182,6 @@ export class Time2Blocks {
         after[0], after[1]
       ];
     }
-
   }
 
   offline(): void {
