@@ -79,7 +79,7 @@ export class Time2Blocks {
   }
 
   getFromMinutes(timestampInMinutes: number): Promise<number | null> {
-    const secondsInMinute = 60;
+    const secondsInMinute = 60_000;
     return this.getFromTimestamp(
       new Calc(timestampInMinutes, calcConfig)
         .multiply(secondsInMinute)
@@ -103,6 +103,7 @@ export class Time2Blocks {
     await this.historyService.updateBlockNextToTimestamp(timestamp, start, end);
     wrapper = this.getBlockFromTimestamp(timestamp);
     if ('block' in wrapper) {
+      this.historyService.cache[timestamp] = wrapper.block;
       return Promise.resolve(wrapper.block);
     }
 
@@ -118,7 +119,7 @@ export class Time2Blocks {
   }
 
   getBlockFromTimestamp(timestamp: number): { block: number } | { blockA: number, blockB: number } {
-    let block = this.historyService.history[timestamp];
+    let block = this.historyService.history[timestamp] || this.historyService.cache[timestamp];
 
     if (block) {
       return { block };
@@ -177,7 +178,6 @@ export class Time2Blocks {
   }
 
   private getBlocksAround(block: number, blocks: number[]): [number, number] {
-    console.info('block', block, 'blocks', blocks);
     const before = blocks.filter(minor => minor <= block);
     const after = blocks.filter(major => major > block);
 

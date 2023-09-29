@@ -30,6 +30,7 @@ export class Time2BlocksHistoryLoader {
   //  starts with a basic historic for reference
   // 🔥🔥🔥🔥🔥🔥🔥
   history: TBlockchainTimeHistory = baseHistory;
+  cache: TBlockchainTimeHistory = {};
 
   historyBlockIndexed!: TBlockchainBlocksHistory;
   timestampKeys!: string[];
