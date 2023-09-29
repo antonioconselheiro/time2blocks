@@ -122,6 +122,8 @@ export class Time2Blocks {
 
     if (block) {
       return { block };
+    } else if (timestamp >= Number(this.historyService.lastBlock.time)) {
+      return { block: this.historyService.lastBlock.block };
     }
 
     const timestampKeys = this.historyService.timestampKeys;
@@ -178,9 +180,22 @@ export class Time2Blocks {
     console.info('block', block, 'blocks', blocks);
     const before = blocks.filter(minor => minor <= block);
     const after = blocks.filter(major => major > block);
-    return [
-      before[before.length - 1], after[0]
-    ];
+
+    if (before.length && after.length) {
+      return [
+        before[before.length - 1], after[0]
+      ];
+    } else if (before.length) {
+      return [
+        before[before.length - 2],
+        before[before.length - 1]
+      ];
+    } else {
+      return [
+        after[0], after[1]
+      ];
+    }
+
   }
 
   offline(): void {
