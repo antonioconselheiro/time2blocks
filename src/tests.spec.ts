@@ -1,4 +1,4 @@
-import { Time2Blocks } from '.';
+import { Time2Blocks, Time2BlocksHistoryLoader } from '.';
 
 const time2Blocks = Time2Blocks.getInstance(false);
 
@@ -13,13 +13,41 @@ describe('raw time 2 blocks', () => {
     expect('block' in result && result.block).toBe(807385);
   });
 
-  test('not indexed time', () => {
+  test('not indexed time get blocks around', () => {
     const result = time2Blocks.getBlockFromTimestamp(1690337500);
     expect(result).toEqual({
       blockA: 799384,
       blockB: 800184
     });
   });
+
+  test('estimated block after block b', () => {
+    const history = Time2BlocksHistoryLoader.getInstance();
+    const result =  history.getEstimatedBlockFromTimestamp(1690337500, {
+      height: 799384,
+      timestamp: "1689767447"
+    }, {
+      height: 800184,
+      timestamp: "1690272048"
+    });
+
+    expect(result).toEqual(800287);
+  });
+
+  test('estimated block between blocks', () => {
+    const history = Time2BlocksHistoryLoader.getInstance();
+    const result =  history.getEstimatedBlockFromTimestamp(1690168630, {
+      height: 799384,
+      timestamp: "1689767447"
+    }, {
+      height: 800184,
+      timestamp: "1690272048"
+    });
+
+    expect(result).toEqual(800020);
+  });
+
+  
 });
 
 describe('formatted blocks', () => {
