@@ -294,7 +294,13 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
 
   protected onConnect(): void {
     this.client.onClose(() => this.onClose());
-    this.client.onMessage(packet => this.onMessage(packet));
+    this.client.onMessage(packet => {
+      if (typeof packet === 'string') {
+        packet = JSON.parse(packet);
+      }
+
+      this.onMessage(packet);
+    });
     this.client.onError(err => console.error('error', err));
 
     this.blockSubscribe();
