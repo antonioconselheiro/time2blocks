@@ -122,7 +122,7 @@ export class Time2Blocks {
 
     if (block) {
       return { block };
-    } else if (timestamp >= Number(this.historyService.lastBlock.time)) {
+    } else if (this.historyService.lastBlock && timestamp >= Number(this.historyService.lastBlock.time)) {
       return { block: this.historyService.lastBlock.block };
     }
 
