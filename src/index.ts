@@ -1,7 +1,5 @@
-import { Calc } from 'calc-js';
 import { Time2BlocksFormat } from './format';
 import { Time2BlocksHistoryLoader } from './history';
-import { calcConfig } from './calc-config';
 
 export * from './format';
 export * from './history';
@@ -38,6 +36,7 @@ export class Time2Blocks {
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
+    console.info('timestamp', timestamp);
     // macgyverism
     if (this.loading) {
       const loading = this.loading;
@@ -66,25 +65,6 @@ export class Time2Blocks {
       return Promise.resolve(v);
     });
     return newLoading;
-  }
-
-  getFromMillisecondsTimestamp(timestamp: number): Promise<number | null> {
-    const millisecondInSecond = 1000;
-    return this.getFromTimestamp(
-      new Calc(timestamp, calcConfig)
-        .divide(millisecondInSecond)
-        .pipe(v => Math.floor(v))
-        .finish()
-    );
-  }
-
-  getFromMinutes(timestampInMinutes: number): Promise<number | null> {
-    const secondsInMinute = 60_000;
-    return this.getFromTimestamp(
-      new Calc(timestampInMinutes, calcConfig)
-        .multiply(secondsInMinute)
-        .finish()
-    );
   }
 
   private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
