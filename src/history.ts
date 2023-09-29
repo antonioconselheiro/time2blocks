@@ -102,6 +102,11 @@ export class Time2BlocksHistoryLoader {
     end: { height: number, timestamp: string }
   ): Promise<void> {
     const baseHeight = this.getEstimatedBlockFromTimestamp(timestamp, start, end);
+    
+    if (baseHeight === this.lastBlock.block) {
+      return Promise.resolve();
+    }
+
     const response = await fetch(`${this.mempoolApi}v1/blocks/${baseHeight}`);
     const blocksList: Array<{ height: string, timestamp: string }> = await response.json();
 
@@ -171,6 +176,8 @@ export class Time2BlocksHistoryLoader {
 
     console.info(
       'timestamp: ', timestamp,
+      'start: ', start,
+      'end: ', end,
       'blocksDifference: ', blocksDifference,
       'timeDifference: ', timeDifference,
       'estimatedTimeForEachBlock: ', estimatedTimeForEachBlock,
