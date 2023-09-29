@@ -19,7 +19,7 @@ export class Time2Blocks {
     return this.instance;
   }
 
-  loading: Array<Promise<any>> = [];
+  loading: Promise<number> | null = null;
 
   private readonly historyService!: Time2BlocksHistoryLoader;
   private readonly formatService = Time2BlocksFormat.getInstance();
@@ -38,9 +38,34 @@ export class Time2Blocks {
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
-    const promise = this.loadFromTimestamp(timestamp);
-    this.loading = [promise].concat(this.loading);
-    return promise;
+    // macgyverism
+    if (this.loading) {
+      const loading = this.loading;
+      const newLoading = this.loading = new Promise<number | null>(resolve => {
+        loading.then(() => {
+          return this.loadFromTimestamp(timestamp).then((v) => {
+            if (newLoading === this.loading) {
+              this.loading = null;
+            }
+
+            resolve(v);
+            return Promise.resolve(v);
+          });
+        });
+      });
+
+      return newLoading;
+    }
+
+    const newLoading = this.loading = this.loadFromTimestamp(timestamp);
+    this.loading.then((v) => {
+      if (newLoading === this.loading) {
+        this.loading = null;
+      }
+
+      return Promise.resolve(v);
+    });
+    return newLoading;
   }
 
   getFromMillisecondsTimestamp(timestamp: number): Promise<number | null> {
@@ -63,84 +88,99 @@ export class Time2Blocks {
   }
 
   private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
-    await Promise.all([].concat(this.loading));
-    let block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
+    let wrapper = this.getBlockFromTimestamp(timestamp);
+    if ('block' in wrapper) {
+      return Promise.resolve(wrapper.block);
     }
 
     if (!this.isOnline) {
       return Promise.resolve(null);
     }
 
-    const { start: start1, end: end1 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp);
-    block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
+    const start = this.getBlockWithDateFromIndexedBlock(wrapper.blockA);
+    const end = this.getBlockWithDateFromIndexedBlock(wrapper.blockB);
+
+    await this.historyService.updateBlockNextToTimestamp(timestamp, start, end);
+    wrapper = this.getBlockFromTimestamp(timestamp);
+    if ('block' in wrapper) {
+      return Promise.resolve(wrapper.block);
     }
 
-    const { start: start2, end: end2 } = await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start1, end1);
-    block = this.getHistoryFromTimestamp(timestamp);
-    if (block !== null) {
-      return Promise.resolve(block);
-    }
-
-    await this.historyService.getUpdateBlockNextToTimestamp(timestamp, start2, end2);
-    block = this.getHistoryFromTimestamp(timestamp);
-    return Promise.resolve(block);
+    return this.loadFromTimestamp(timestamp);
   }
 
-  getHistoryFromTimestamp(timestamp: number): number | null {
-    const block = this.historyService.history[timestamp];
+  private getBlockWithDateFromIndexedBlock(indexedBlock: number): {
+    height: number;
+    timestamp: string;
+  } {
+    const timestamp = this.historyService.historyBlockIndexed[indexedBlock];
+    return { height: indexedBlock, timestamp };
+  }
+
+  getBlockFromTimestamp(timestamp: number): { block: number } | { blockA: number, blockB: number } {
+    let block = this.historyService.history[timestamp];
 
     if (block) {
-      return block;
-    } else {
-      const timeKey = this.getTimeWithBlockIndexedFromTime(timestamp, Object.keys(this.historyService.history));
-      const isValid = this.isValidTimeKey(timestamp, timeKey);
-
-      if (isValid) {
-        return this.historyService.history[timeKey];
-      }
+      return { block };
     }
 
-    return null;
-  }
+    const timestampKeys = this.historyService.timestampKeys;
+    const timeKey = this.getTimeIndexedFromTime(timestamp, [].concat(timestampKeys));
+    block = this.historyService.history[timeKey];
 
-  private isValidTimeKey(timestamp: number, timeKey: number): boolean {
-    const timeDifference = new Calc(timestamp, calcConfig)
-      .minus(timeKey)
-      .pipe(v => Math.sqrt(Math.pow(v, 2)))
-      .finish();
+    const blockBefore = block - 1;
+    const blockAfter = block + 1;
 
-    const secondsInMinute = 60;
-    const maxRangeMin = 19;
-    const maxRange = new Calc(secondsInMinute, calcConfig)
-      .multiply(maxRangeMin)
-      .finish();
+    const isBeforeBlockIndexed = !!this.historyService.historyBlockIndexed[blockBefore];
+    const isAfterBlockIndexed =  !!this.historyService.historyBlockIndexed[blockAfter];
 
-    if (timeDifference > maxRange) {
-      return false;
+    if (isBeforeBlockIndexed && isAfterBlockIndexed) {
+      return { block };
     }
-
-    return true;
+    
+    const blockKeys = this.historyService.blockKeys;
+    const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
+    return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
   }
 
   format(block: number, format: string, numberSeparator = ','): string {
     return this.formatService.format(block, format, numberSeparator);
   }
 
-  private getTimeWithBlockIndexedFromTime(timestamp: number, times: string[]): number {
+  /// 🔥🔥🔥🔥🔥🔥
+  private getTimeIndexedFromTime(timestamp: number, times: string[]): number {
     if (times.length === 1) {
       return Number(times[0]);
     }
 
     const middle = Math.floor(times.length / 2);
     if (Number(times[middle]) < timestamp) {
-      return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(middle));
+      return this.getTimeIndexedFromTime(timestamp, times.splice(middle));
     } else {
-      return this.getTimeWithBlockIndexedFromTime(timestamp, times.splice(0, middle));
+      return this.getTimeIndexedFromTime(timestamp, times.splice(0, middle));
     }
+  }
+
+  private getIndexedBlocksAroundBlock(block: number, blocks: number[]): [number, number] {
+    if (blocks.length < 10) {
+      return this.getBlocksAround(block, blocks);
+    }
+
+    const middle = Math.floor(blocks.length / 2);
+    if (Number(blocks[middle]) < block) {
+      return this.getIndexedBlocksAroundBlock(block, blocks.splice(middle));
+    } else {
+      return this.getIndexedBlocksAroundBlock(block, blocks.splice(0, middle));
+    }
+  }
+
+  private getBlocksAround(block: number, blocks: number[]): [number, number] {
+    console.info('block', block, 'blocks', blocks);
+    const before = blocks.filter(minor => minor <= block);
+    const after = blocks.filter(major => major > block);
+    return [
+      before[before.length - 1], after[0]
+    ];
   }
 
   offline(): void {

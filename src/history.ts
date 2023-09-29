@@ -1,9 +1,14 @@
 import { Calc } from 'calc-js';
 import { calcConfig } from './calc-config';
 import { WebSocket as WebSocketNode } from 'ws';
+import { baseHistory } from './base-history';
 
 export type TBlockchainTimeHistory = {
   [time: string]: number
+};
+
+export type TBlockchainBlocksHistory = {
+  [block: string]: string
 };
 
 export class Time2BlocksHistoryLoader {
@@ -13,6 +18,7 @@ export class Time2BlocksHistoryLoader {
     if (!this.instance) {
       this.instance = newInstance || new Time2BlocksHistoryLoader(isOnline);
 
+      this.instance.updateHistoryIndex();
       if (isOnline) {
         this.instance.update().then(() => this.instance.listenMempool());
       }
@@ -23,12 +29,16 @@ export class Time2BlocksHistoryLoader {
 
   //  starts with a basic historic for reference
   // 🔥🔥🔥🔥🔥🔥🔥
-  history: TBlockchainTimeHistory = {"1694628304":807500,"1694629434":807501,"1694629923":807502,"1694630354":807503,"1694631328":807504,"1694631354":807505,"1694631939":807506,"1694632075":807507,"1694632220":807508,"1694632597":807509,"1694632671":807510,"1694633045":807511,"1694633573":807512,"1694633935":807513,"1694634127":807514,"1694634714":807515,"1694634786":807516,"1694635076":807517,"1694635548":807518,"1694635568":807519,"1694635589":807520,"1694637204":807521,"1694638174":807522,"1694638351":807523,"1694638785":807524,"1694638849":807525,"1694638991":807526,"1694640340":807527,"1694641538":807528,"1694642418":807529,"1694642551":807530,"1694642574":807531,"1694642917":807532,"1694642973":807533,"1694643377":807534,"1694644529":807535,"1694644570":807536,"1694645231":807537,"1694646859":807538,"1694647558":807539,"1694647807":807540,"1694647856":807541,"1694648211":807542,"1694648684":807543,"1694649462":807544,"1694650774":807545,"1694651781":807546,"1694652088":807547,"1694652291":807548,"1694655059":807549,"1694657376":807550,"1694657836":807551,"1694658423":807552,"1694658714":807553,"1694659484":807554,"1694659607":807555,"1694660157":807556,"1694660373":807557,"1694661287":807558,"1694661374":807559,"1694662425":807560,"1694663125":807561,"1694663514":807562,"1694664240":807563,"1694664752":807564,"1694665543":807565,"1694665603":807566,"1694665785":807567,"1694665855":807568,"1694665886":807569,"1694666482":807570,"1694667073":807571,"1694667157":807572,"1694667684":807573,"1694667781":807574,"1694668171":807575,"1694668249":807576,"1694668404":807577,"1694668620":807578,"1694670538":807579,"1694670656":807580,"1694670807":807581,"1694671211":807582,"1694671782":807583,"1694672956":807584,"1694673045":807585,"1694673629":807586,"1694673724":807587,"1694673803":807588,"1694674180":807589,"1694674422":807590,"1694674614":807591,"1694674640":807592,"1694676198":807593,"1694676604":807594,"1694677006":807595,"1694677529":807596,"1694678289":807597,"1694679447":807598,"1694679742":807599,"1694680557":807600,"1694680820":807601,"1694680960":807602,"1694681054":807603,"1694681157":807604,"1694682165":807605,"1694682807":807606,"1694683001":807607,"1694683064":807608,"1694684425":807609,"1694687806":807610,"1694687935":807611,"1694689283":807612,"1694690134":807613,"1694690667":807614,"1694690783":807615,"1694691164":807616,"1694691275":807617,"1694691733":807618,"1694692419":807619};
+  history: TBlockchainTimeHistory = baseHistory;
+
+  historyBlockIndexed!: TBlockchainBlocksHistory;
+  timestampKeys!: string[];
+  blockKeys!: number[];
 
   private readonly mempoolApi = 'https://mempool.space/api/';
 
   private mempoolConn: Time2BlockMempoolConn | null = null;
-  private lastBlock: { block: number, time: string } | null = null;
+  lastBlock: { block: number, time: string } | null = null;
 
   listening = false;
   updating: Promise<void>[] = [];
@@ -41,10 +51,12 @@ export class Time2BlocksHistoryLoader {
 
   setIndex(history: TBlockchainTimeHistory): void {
     this.history = history;
+    this.updateHistoryIndex();
   }
 
   updateIndex(history: TBlockchainTimeHistory): void {
     this.history = { ...this.history, ...history };
+    this.updateHistoryIndex();
   }
 
   addBlock(block: number, time: string): void {
@@ -52,11 +64,13 @@ export class Time2BlocksHistoryLoader {
       this.lastBlock = { block, time };
     }
     this.history[time] = block;
+    this.updateHistoryIndex();
   }
 
   async loadIndex(path?: string): Promise<void> {
     const response = await fetch(path || './history.json');
     this.history = await response.json();
+    this.updateHistoryIndex();
     return Promise.resolve();
   }
 
@@ -82,36 +96,17 @@ export class Time2BlocksHistoryLoader {
     }
   }
 
-  async getUpdateBlockNextToTimestamp(
+  async updateBlockNextToTimestamp(
     timestamp: number,
-    start?: { height: number, timestamp: string },
-    end?: { height: number, timestamp: string }
-  ): Promise<{
-    start?: { height: number, timestamp: string },
-    end?: { height: number, timestamp: string }
-  }> {
+    start: { height: number, timestamp: string },
+    end: { height: number, timestamp: string }
+  ): Promise<void> {
     const baseHeight = this.getEstimatedBlockFromTimestamp(timestamp, start, end);
     const response = await fetch(`${this.mempoolApi}v1/blocks/${baseHeight}`);
     const blocksList: Array<{ height: string, timestamp: string }> = await response.json();
 
     blocksList.forEach(({ height, timestamp }) => this.history[timestamp] = Number(height));
-
-    const lastBlock = blocksList.length - 1;
-
-    const resultStart = {
-      height: Number(blocksList[0].height),
-      timestamp: blocksList[0].timestamp
-    };
-
-    const resultEnd = {
-      height: Number(blocksList[lastBlock].height),
-      timestamp: blocksList[lastBlock].timestamp
-    };
-
-    return Promise.resolve({
-      start: resultStart,
-      end: resultEnd
-    });
+    this.updateHistoryIndex();
   }
 
   private async update(): Promise<void> {
@@ -134,28 +129,21 @@ export class Time2BlocksHistoryLoader {
 
     const metadata = { height, timestamp: String(timestamp) };
     this.history[metadata.timestamp] = metadata.height;
+    this.updateHistoryIndex();
     return Promise.resolve(metadata);
+  }
+
+  updateHistoryIndex(): void {
+    this.timestampKeys = Object.keys(this.history).sort((a, b) => Number(a) - Number(b));
+    this.blockKeys = Object.values(this.history).sort((a, b) => a - b);
+    this.historyBlockIndexed = Object.fromEntries(Object.entries(this.history).map(([chave, valor]) => [valor, chave]));
   }
 
   getEstimatedBlockFromTimestamp(
     timestamp: number,
-    start?: { height: number, timestamp: string },
-    end?: { height: number, timestamp: string }
+    start: { height: number, timestamp: string },
+    end: { height: number, timestamp: string }
   ): number {
-    if (!start || !end) {
-      let historyAsKeys: string[] | null = Object.keys(this.history);
-      const startTimestamp = historyAsKeys[historyAsKeys.length - 20]; // 1694680557
-      const endTimestamp = historyAsKeys[historyAsKeys.length - 1]; // 1694692419
-
-      historyAsKeys = null;
-
-      const startHeight = this.history[startTimestamp];
-      const endHeight = this.history[endTimestamp];
-
-      start = { height: startHeight, timestamp: startTimestamp };
-      end = { height: endHeight, timestamp: endTimestamp };
-    }
-
     const blocksDifference = new Calc(end.height, calcConfig).minus(start.height).finish();
     const timeDifference = new Calc(Number(end.timestamp), calcConfig)
       .minus(Number(start.timestamp))
@@ -181,6 +169,15 @@ export class Time2BlocksHistoryLoader {
       return this.lastBlock.block;
     }
 
+    console.info(
+      'timestamp: ', timestamp,
+      'blocksDifference: ', blocksDifference,
+      'timeDifference: ', timeDifference,
+      'estimatedTimeForEachBlock: ', estimatedTimeForEachBlock,
+      'timeDifferenceBetweenReferenceAndArg: ', timeDifferenceBetweenReferenceAndArg,
+      'estimatedBlocksFromStartReference: ', estimatedBlocksFromStartReference,
+      'estimatedBlock: ', estimatedBlock
+    );
     return estimatedBlock;
   }
 
@@ -325,3 +322,40 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
     this.client = null;
   }
 }
+
+/**
+ * TODO:
+ * Como deve ficar o algoritimo:
+ * 
+ * o bloco mais recente deve ser marcado como último bloco, para servir como referência;
+ * 
+ * busca indexadas pode retornar bloco ou blocoA e blocoB sugerindo que haja uma consulta
+ * na mempool para atualização;
+ * 
+ * o blocoA e blocoB devem ser entregues a um algoritimo que calculará o seguinte:
+ * - a distancia de tempo entre a e b;
+ * - a distancia de blocos entre a e b;
+ * - com essas informações identificarei uma estimativa de quanto tempo demora para
+ * processar cada bloco na região de tempo consultada;
+ * - considerando a diferença de tempo entre o tempo do blocoA e o tempo solicitado e
+ * considerando a estimativa de quanto tempo demora para processar cada bloco se chega
+ * a um provavel bloco correspondente ao tempo passado;
+ * - a partir da informação do bloco estimado para o tempo solicitado é feita uma consulta
+ * na mempool para atualizar os blocos ao redor do bloco estimado;
+ * - a consulta é iniciada novamente com a expectativa de que o tempo entregue agora retorne
+ * um bloco indexado, por conta da atualização com a mempool, se este não for o caso, então
+ * uma nova consulta para atualização será feita na mempool;
+ * 
+ * IMPORTANTE: não se deve ocorrer diversas consultas em paralelo, todas as buscas no indice
+ * devem aguardar as requisições em curso para atualização dos dados, isso impede consultas
+ * repetidas simultâneas
+ * 
+ * 
+ * 
+ * 
+ * 2. Garantir o funcionamento da exibição do bloco atual sem formatação
+ * 
+ * 3. Retestar o comportamento do time2blocks quando não houvererem os dados
+ * indexados e a distância de tempo for muito grande desde a última atualização
+ * 
+ */
