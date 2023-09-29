@@ -103,7 +103,7 @@ export class Time2BlocksHistoryLoader {
   ): Promise<void> {
     const baseHeight = this.getEstimatedBlockFromTimestamp(timestamp, start, end);
     
-    if (baseHeight === this.lastBlock.block) {
+    if (this.lastBlock && baseHeight === this.lastBlock.block) {
       return Promise.resolve();
     }
 
