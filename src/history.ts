@@ -103,8 +103,9 @@ export class Time2BlocksHistoryLoader {
     end: { height: number, timestamp: string }
   ): Promise<void> {
     const baseHeight = this.getEstimatedBlockFromTimestamp(timestamp, start, end);
-    
+    console.info(`[executed getEstimatedBlockFromTimestamp with timestamp: ${timestamp}, start: ${start}, end: ${end}], result: ${baseHeight}`);
     if (this.lastBlock && baseHeight === this.lastBlock.block) {
+      console.info(' :: BASEHEIGHT EQUAL LAST BLOCK');
       return Promise.resolve();
     }
 
@@ -150,6 +151,7 @@ export class Time2BlocksHistoryLoader {
     start: { height: number, timestamp: string },
     end: { height: number, timestamp: string }
   ): number {
+    console.info('[getEstimatedBlockFromTimestamp]', timestamp, start, end);
     const blocksDifference = new Calc(end.height, calcConfig).minus(start.height).finish();
     const timeDifference = new Calc(Number(end.timestamp), calcConfig)
       .minus(Number(start.timestamp))
@@ -171,7 +173,10 @@ export class Time2BlocksHistoryLoader {
       .pipe(v => Math.sqrt(Math.pow(v, 2)))
       .finish();
 
-    const estimatedBlock = new Calc(start.height, calcConfig).sum(estimatedBlocksFromStartReference).finish();
+    const estimationOperation: 'sum' | 'minus' = timestamp > Number(end.timestamp) ? 'sum' : 'minus';
+    const estimatedBlock = new Calc(
+      start.height, calcConfig
+    )[estimationOperation](estimatedBlocksFromStartReference).finish();
     if (estimatedBlock <= 1) {
       return 1;
     } else if (this.lastBlock && estimatedBlock >= this.lastBlock.block) {

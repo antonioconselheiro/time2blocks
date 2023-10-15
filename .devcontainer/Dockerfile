@@ -10,6 +10,7 @@ WORKDIR /time2blocks
 
 COPY ./.gitconfig /root/.gitconfig
 COPY ./.ssh /root/.ssh
+RUN chmod 600 -R /root/.ssh
 
 ENV LANG C.UTF-8
 ENV TZ America/Sao_Paulo

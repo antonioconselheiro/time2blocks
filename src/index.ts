@@ -103,9 +103,12 @@ export class Time2Blocks {
     let block = this.historyService.history[timestamp] || this.historyService.cache[timestamp];
 
     if (block) {
+      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', find block: ', block);
       return { block };
     } else if (this.historyService.lastBlock && timestamp >= Number(this.historyService.lastBlock.time)) {
-      return { block: this.historyService.lastBlock.block };
+      block = this.historyService.lastBlock.block;
+      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', find block: ', block);
+      return { block };
     }
 
     const timestampKeys = this.historyService.timestampKeys;
@@ -119,15 +122,18 @@ export class Time2Blocks {
     const isAfterBlockIndexed =  !!this.historyService.historyBlockIndexed[blockAfter];
 
     if (isBeforeBlockIndexed && isAfterBlockIndexed) {
+      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', find block: ', block);
       return { block };
     }
 
     const blockKeys = this.historyService.blockKeys;
     if (!isBeforeBlockIndexed) {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
+      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', reference blocks: ', [blockIndexedBefore, blockIndexedAfter]);
       return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
     } else {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockAfter, blockKeys);
+      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', reference blocks: ', [blockIndexedBefore, blockIndexedAfter]);
       return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
     }
     
@@ -152,7 +158,7 @@ export class Time2Blocks {
   }
 
   private getIndexedBlocksAroundBlock(block: number, blocks: number[]): [number, number] {
-    if (blocks.length < 10) {
+    if (blocks.length < 5) {
       return this.getBlocksAround(block, blocks);
     }
 
