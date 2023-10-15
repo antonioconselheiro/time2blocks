@@ -158,35 +158,35 @@ export class Time2Blocks {
   }
 
   private getIndexedBlocksAroundBlock(block: number, blocks: number[]): [number, number] {
-    if (blocks.length < 5) {
-      return this.getBlocksAround(block, blocks);
+    const blockBefore = this.getIndexedBlocksAfterBlock(block, [].concat(blocks));
+    const blockAfter = this.getIndexedBlocksBeforeBlock(block, [].concat(blocks));
+
+    return [blockBefore, blockAfter];
+  }
+
+  private getIndexedBlocksAfterBlock(block: number, blocks: number[]): number {
+    if (blocks.length === 1) {
+      return blocks[0];
+    }
+
+    const middle = Math.ceil(blocks.length / 2);
+    if (Number(blocks[middle]) < block) {
+      return this.getIndexedBlocksAfterBlock(block, blocks.splice(middle));
+    } else {
+      return this.getIndexedBlocksAfterBlock(block, blocks.splice(0, middle));
+    }
+  }
+
+  private getIndexedBlocksBeforeBlock(block: number, blocks: number[]): number {
+    if (blocks.length === 1) {
+      return blocks[0];
     }
 
     const middle = Math.floor(blocks.length / 2);
     if (Number(blocks[middle]) < block) {
-      return this.getIndexedBlocksAroundBlock(block, blocks.splice(middle));
+      return this.getIndexedBlocksBeforeBlock(block, blocks.splice(middle));
     } else {
-      return this.getIndexedBlocksAroundBlock(block, blocks.splice(0, middle));
-    }
-  }
-
-  private getBlocksAround(block: number, blocks: number[]): [number, number] {
-    const before = blocks.filter(minor => minor <= block);
-    const after = blocks.filter(major => major > block);
-
-    if (before.length && after.length) {
-      return [
-        before[before.length - 1], after[0]
-      ];
-    } else if (before.length) {
-      return [
-        before[before.length - 2],
-        before[before.length - 1]
-      ];
-    } else {
-      return [
-        after[0], after[1]
-      ];
+      return this.getIndexedBlocksBeforeBlock(block, blocks.splice(0, middle));
     }
   }
 
