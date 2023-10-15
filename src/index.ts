@@ -126,7 +126,7 @@ export class Time2Blocks {
       return { block };
     }
 
-    const blockKeys = this.historyService.blockKeys;
+    const blockKeys = [].concat(this.historyService.blockKeys);
     if (!isBeforeBlockIndexed) {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
       console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', reference blocks: ', [blockIndexedBefore, blockIndexedAfter]);

@@ -112,7 +112,7 @@ export class Time2BlocksHistoryLoader {
     const response = await fetch(`${this.mempoolApi}v1/blocks/${baseHeight}`);
     const blocksList: Array<{ height: string, timestamp: string }> = await response.json();
 
-    blocksList.forEach(({ height, timestamp }) => this.history[timestamp] = Number(height));
+    blocksList.forEach(({ height, timestamp }) => this.addBlock(Number(height), timestamp));
     this.updateHistoryIndex();
   }
 
