@@ -36,13 +36,11 @@ export class Time2Blocks {
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
-    console.info('timestamp', timestamp);
     // macgyverism
     if (this.loading) {
       const loading = this.loading;
       const newLoading = this.loading = new Promise<number | null>(resolve => {
         loading.then(() => {
-          console.info('loadFromTimestamp(timestamp)', timestamp);
           return this.loadFromTimestamp(timestamp).then((v) => {
             if (newLoading === this.loading) {
               this.loading = null;
@@ -103,11 +101,9 @@ export class Time2Blocks {
     let block = this.historyService.history[timestamp] || this.historyService.cache[timestamp];
 
     if (block) {
-      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', find block: ', block);
       return { block };
     } else if (this.historyService.lastBlock && timestamp >= Number(this.historyService.lastBlock.time)) {
       block = this.historyService.lastBlock.block;
-      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', find block: ', block);
       return { block };
     }
 
@@ -122,21 +118,17 @@ export class Time2Blocks {
     const isAfterBlockIndexed =  !!this.historyService.historyBlockIndexed[blockAfter];
 
     if (isBeforeBlockIndexed && isAfterBlockIndexed) {
-      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', find block: ', block);
       return { block };
     }
 
     const blockKeys = [].concat(this.historyService.blockKeys);
     if (!isBeforeBlockIndexed) {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
-      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', reference blocks: ', [blockIndexedBefore, blockIndexedAfter]);
       return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
     } else {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockAfter, blockKeys);
-      console.info('[getBlockFromTimestamp] timestamp: ', timestamp, ', reference blocks: ', [blockIndexedBefore, blockIndexedAfter]);
       return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
     }
-    
   }
 
   format(block: number, format: string, numberSeparator = ','): string {
@@ -170,7 +162,7 @@ export class Time2Blocks {
     }
 
     const middle = Math.ceil(blocks.length / 2);
-    if (Number(blocks[middle]) < block) {
+    if (Number(blocks[middle]) <= block) {
       return this.getIndexedBlocksAfterBlock(block, blocks.splice(middle));
     } else {
       return this.getIndexedBlocksAfterBlock(block, blocks.splice(0, middle));

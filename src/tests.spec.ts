@@ -31,7 +31,7 @@ describe('raw time 2 blocks', () => {
       timestamp: "1690272048"
     });
 
-    expect(result).toEqual(800287);
+    expect(result).toEqual(800288);
   });
 
   test('estimated block between blocks', () => {
@@ -44,7 +44,7 @@ describe('raw time 2 blocks', () => {
       timestamp: "1690272048"
     });
 
-    expect(result).toEqual(800020);
+    expect(result).toEqual(798748);
   });
 
   
