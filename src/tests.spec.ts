@@ -21,6 +21,20 @@ describe('raw time 2 blocks', () => {
     });
   });
 
+  test('estimated block must be beetween given references', () => {
+    const history = Time2BlocksHistoryLoader.getInstance();
+    const result =  history.getEstimatedBlockFromTimestamp(1280426887, {
+      height: 70504,
+      timestamp: "1280168658"
+    }, {
+      height: 71305,
+      timestamp: "1280570691"
+    });
+
+    expect(result).toBeGreaterThan(70504);
+    expect(result).toBeLessThan(71305);
+  });
+
   test('estimated block after block b', () => {
     const history = Time2BlocksHistoryLoader.getInstance();
     const result =  history.getEstimatedBlockFromTimestamp(1690337500, {
@@ -31,7 +45,7 @@ describe('raw time 2 blocks', () => {
       timestamp: "1690272048"
     });
 
-    expect(result).toEqual(800288);
+    expect(result).toEqual(798480);
   });
 
   test('estimated block between blocks', () => {
@@ -44,7 +58,7 @@ describe('raw time 2 blocks', () => {
       timestamp: "1690272048"
     });
 
-    expect(result).toEqual(798748);
+    expect(result).toEqual(800020);
   });
 
   test('timestamp before bitcoin', () => {

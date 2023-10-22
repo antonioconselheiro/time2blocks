@@ -152,31 +152,42 @@ export class Time2BlocksHistoryLoader {
     start: { height: number, timestamp: string },
     end: { height: number, timestamp: string }
   ): number {
+    console.info(' ::: timestamp', timestamp);
     const blocksDifference = new Calc(end.height, calcConfig).minus(start.height).finish();
+    console.info('blocksDifference: ', blocksDifference);
+
     const timeDifference = new Calc(Number(end.timestamp), calcConfig)
       .minus(Number(start.timestamp))
       .finish();
+      console.info('timeDifference: ', timeDifference);
 
+    
     const estimatedTimeForEachBlock = new Calc(timeDifference, calcConfig)
       .divide(blocksDifference)
       .pipe(v => Math.floor(v))
       .finish();
+      console.info('estimatedTimeForEachBlock: ', estimatedTimeForEachBlock);
 
     const timeDifferenceBetweenReferenceAndArg = new Calc(timestamp, calcConfig)
       .minus(Number(start.timestamp))
       .pipe(v => Math.sqrt(Math.pow(v, 2)))
       .finish();
+      console.info('timeDifferenceBetweenReferenceAndArg: ', timeDifferenceBetweenReferenceAndArg);
 
     const estimatedBlocksFromStartReference = new Calc(timeDifferenceBetweenReferenceAndArg, calcConfig)
       .divide(estimatedTimeForEachBlock)
       .pipe(v => Math.floor(v))
       .pipe(v => Math.sqrt(Math.pow(v, 2)))
       .finish();
+      console.info('estimatedBlocksFromStartReference: ', estimatedBlocksFromStartReference);
 
-    const estimationOperation: 'sum' | 'minus' = timestamp > Number(end.timestamp) ? 'sum' : 'minus';
+    const estimationOperation: 'sum' | 'minus' = timestamp > Number(end.timestamp) ? 'minus' : 'sum';
+    console.info('estimationOperation: ', estimationOperation);
     const estimatedBlock = new Calc(
       start.height, calcConfig
     )[estimationOperation](estimatedBlocksFromStartReference).finish();
+
+    console.info('estimatedBlock: ', estimatedBlock);
     if (estimatedBlock <= 1) {
       return 1;
     } else if (this.lastBlock && estimatedBlock >= this.lastBlock.block) {
