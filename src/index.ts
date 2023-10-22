@@ -191,7 +191,7 @@ export class Time2Blocks {
     );
     if (majorBlockFromBeforeBlocks < requestedBlock && requestedBlock < minorBlockFromAfterBlocks) {
       return [majorBlockFromBeforeBlocks, minorBlockFromAfterBlocks];
-    } else if (blockInMiddle < requestedBlock) {
+    } else if (requestedBlock < blockInMiddle) {
       return this.getIndexedBlocksAroundBlock(requestedBlock, blocksBeforeMiddle);
     } else {
       return this.getIndexedBlocksAroundBlock(requestedBlock, blocksAfterMiddle);

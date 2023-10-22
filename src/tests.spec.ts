@@ -14,7 +14,7 @@ describe('raw time 2 blocks', () => {
   });
 
   test('not indexed time get blocks around', () => {
-    const result = time2Blocks.getBlockFromTimestamp(1689768000);
+    const result = time2Blocks.getBlockFromTimestamp(1690500000);
     expect(result).toEqual({
       blockA: 799384,
       blockB: 800184
