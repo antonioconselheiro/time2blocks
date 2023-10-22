@@ -108,7 +108,6 @@ export class Time2Blocks {
       block = this.historyService.lastBlock.block;
       return { block };
     } else if (Number(this.historyService.firstBlock.time) > timestamp) {
-      console.info('this.historyService.firstBlock.time:', Number(this.historyService.firstBlock.time), 'timestamp: ', timestamp);
       //  if timestamp is minor than the first block creation time
       block = this.historyService.firstBlock.block;
       return { block };
@@ -117,7 +116,6 @@ export class Time2Blocks {
     const timestampKeys = this.historyService.timestampKeys;
     const timeKey = this.getTimeIndexedFromTime(timestamp, [].concat(timestampKeys));
     block = this.historyService.history[timeKey];
-    console.info('given timestamp: ', timestamp, ', indexed timestamp found: ', timeKey, ', block from indexed timestamp: ', block);
 
     const blockBefore = block - 1;
     const blockAfter = block + 1;
@@ -134,11 +132,11 @@ export class Time2Blocks {
     const blockKeys = [].concat(this.historyService.blockKeys);
     if (!isBeforeBlockIndexed) {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockBefore, blockKeys);
-      console.info({ blockA: blockIndexedBefore, blockB: blockIndexedAfter });
+
       return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
     } else {
       const [blockIndexedBefore, blockIndexedAfter] = this.getIndexedBlocksAroundBlock(blockAfter, blockKeys);
-      console.info({ blockA: blockIndexedBefore, blockB: blockIndexedAfter });
+
       return { blockA: blockIndexedBefore, blockB: blockIndexedAfter };
     }
   }
@@ -185,10 +183,6 @@ export class Time2Blocks {
     const majorBlockFromBeforeBlocks = blocksBeforeMiddle[blocksBeforeMiddle.length -1];
     const minorBlockFromAfterBlocks = blocksAfterMiddle[0];
 
-    console.info(
-      `blocksBeforeMiddle (${blocksBeforeMiddle.length}): ...`, [].concat(blocksBeforeMiddle).splice(blocksBeforeMiddle.length - 4),
-      `blocksAfterMiddle (${blocksBeforeMiddle.length}):`, [].concat(blocksAfterMiddle).splice(0, 3), '...'
-    );
     if (majorBlockFromBeforeBlocks < requestedBlock && requestedBlock < minorBlockFromAfterBlocks) {
       return [majorBlockFromBeforeBlocks, minorBlockFromAfterBlocks];
     } else if (requestedBlock < blockInMiddle) {
