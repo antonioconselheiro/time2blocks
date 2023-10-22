@@ -135,7 +135,17 @@ export class Time2Blocks {
     return this.formatService.format(block, format, numberSeparator);
   }
 
-  /// 🔥🔥🔥🔥🔥🔥
+  /**
+   * using the timestamp passed by parameter, it searches the indexed timestamps,
+   * those with the associated block number, and then delivers the timestamp
+   * closest to the parameter that is indexed
+   *
+   * @param timestamp reference
+   * @param times array with all indexed timestamp
+   * @returns indexed timestamp closest to the timestamp parameter
+   * 
+   * 🔥🔥🔥🔥🔥🔥
+   */
   private getTimeIndexedFromTime(timestamp: number, times: string[]): number {
     if (times.length === 1) {
       return Number(times[0]);
@@ -149,36 +159,25 @@ export class Time2Blocks {
     }
   }
 
-  private getIndexedBlocksAroundBlock(block: number, blocks: number[]): [number, number] {
-    const blockBefore = this.getIndexedBlocksAfterBlock(block, [].concat(blocks));
-    const blockAfter = this.getIndexedBlocksBeforeBlock(block, [].concat(blocks));
-
-    return [blockBefore, blockAfter];
-  }
-
-  private getIndexedBlocksAfterBlock(block: number, blocks: number[]): number {
+  private getIndexedBlocksAroundBlock(requestedBlock: number, blocks: number[]): [number, number] {
     if (blocks.length === 1) {
-      return blocks[0];
-    }
-
-    const middle = Math.ceil(blocks.length / 2);
-    if (Number(blocks[middle]) <= block) {
-      return this.getIndexedBlocksAfterBlock(block, blocks.splice(middle));
-    } else {
-      return this.getIndexedBlocksAfterBlock(block, blocks.splice(0, middle));
-    }
-  }
-
-  private getIndexedBlocksBeforeBlock(block: number, blocks: number[]): number {
-    if (blocks.length === 1) {
-      return blocks[0];
+      return [blocks[0], blocks[0]];
     }
 
     const middle = Math.floor(blocks.length / 2);
-    if (Number(blocks[middle]) < block) {
-      return this.getIndexedBlocksBeforeBlock(block, blocks.splice(middle));
+    const blocksBeforeMiddle = blocks.splice(0, middle);
+    const blocksAfterMiddle = blocks;
+    const blockInMiddle = Number(blocks[middle]);
+
+    const majorBlockFromBeforeBlocks = blocksBeforeMiddle[blocksBeforeMiddle.length -1];
+    const minorBlockFromAfterBlocks = blocksAfterMiddle[0];
+
+    if (majorBlockFromBeforeBlocks > requestedBlock && requestedBlock < minorBlockFromAfterBlocks) {
+      return [majorBlockFromBeforeBlocks, minorBlockFromAfterBlocks];
+    } else if (blockInMiddle < requestedBlock) {
+      return this.getIndexedBlocksAroundBlock(requestedBlock, blocksBeforeMiddle);
     } else {
-      return this.getIndexedBlocksBeforeBlock(block, blocks.splice(0, middle));
+      return this.getIndexedBlocksAroundBlock(requestedBlock, blocksAfterMiddle);
     }
   }
 

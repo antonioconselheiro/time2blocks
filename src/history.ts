@@ -296,8 +296,8 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
 
       this.onMessage(packet);
     });
-    this.client.onError(err => console.error('error', err));
 
+    this.client.onError(err => console.error('error', err));
     this.blockSubscribe();
   }
 
