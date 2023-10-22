@@ -40,6 +40,9 @@ export class Time2BlocksHistoryLoader {
 
   private mempoolConn: Time2BlockMempoolConn | null = null;
   lastBlock: { block: number, time: string } | null = null;
+  readonly firstBlock: { block: number, time: string } = {
+    block: 1, time: '1230983705'
+  };
 
   listening = false;
   updating: Promise<void>[] = [];

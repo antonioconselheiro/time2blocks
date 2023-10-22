@@ -1,6 +1,7 @@
 import { TBlockchainTimeHistory } from ".";
 
 export const baseHistory: TBlockchainTimeHistory = {
+  "1230983705": 1,
   "1231601457":28,
   "1232214634":831,
   "1232824705":1632,

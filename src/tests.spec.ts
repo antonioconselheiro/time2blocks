@@ -14,10 +14,10 @@ describe('raw time 2 blocks', () => {
   });
 
   test('not indexed time get blocks around', () => {
-    const result = time2Blocks.getBlockFromTimestamp(1690337500);
+    const result = time2Blocks.getBlockFromTimestamp(1689768000);
     expect(result).toEqual({
-      blockA: 804184,
-      blockB: 804985
+      blockA: 799384,
+      blockB: 800184
     });
   });
 
@@ -47,7 +47,11 @@ describe('raw time 2 blocks', () => {
     expect(result).toEqual(798748);
   });
 
-  
+  test('timestamp before bitcoin', () => {
+    const result = time2Blocks.getBlockFromTimestamp(1230083705);
+    expect('block' in result && result.block).toBe(1);
+  });
+
 });
 
 describe('formatted blocks', () => {
