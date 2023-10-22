@@ -5,11 +5,11 @@
 ⁶ Blessings are on the head of the just: but violence covers the mouth of the wicked. 
 
 # Time2Blocks
+Timestamp to bitcoin block
 
 [![npm version](https://badge.fury.io/js/@belomonte%2Ftime2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
 [![Npm Total Downloads](https://img.shields.io/npm/dt/@belomonte/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
 [![Npm Monthly Downloads](https://img.shields.io/npm/dm/@belomonte/time2blocks.svg)](https://github.com/antonioconselheiro/time2blocks)
-[![Build Status](https://travis-ci.org/antonioconselheiro/time2blocks.svg?branch=master)](https://travis-ci.org/antonioconselheiro/time2blocks)
 
 _____
 
@@ -78,7 +78,7 @@ time2blocks.offline();
 ```
 
 ### Formats
-![formats](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/docs/time2blocks.png)
+![formats](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/imgs/time2blocks.png)
 
 
 ## Grow NOSTR
@@ -93,11 +93,11 @@ There's still a lot of work to do.
 
 Lighting donate: [lightning:peevedbeer57@walletofsatoshi.com](lightning:peevedbeer57@walletofsatoshi.com)
 
-![zap me with lighting network](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/docs/qrcode-wallet-lighting.png)
+![zap me with lighting network](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/imgs/qrcode-wallet-lighting.png)
 
 Bitcoin onchain donate: [bitcoin:bc1qrm99lmmpwk7zsh7njpgthw87yvdm38j2lzpq7q](bitcoin:bc1qrm99lmmpwk7zsh7njpgthw87yvdm38j2lzpq7q)
 
-![on-chain transfer](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/docs/qrcode-wallet-bitcoin.png)
+![on-chain transfer](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/imgs/qrcode-wallet-bitcoin.png)
 
 ## Contribute
 [CONTRIBUTE.md](./CONTRIBUTE.md)

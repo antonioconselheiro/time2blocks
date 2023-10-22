@@ -4,20 +4,20 @@ const time2Blocks = Time2Blocks.getInstance(false);
 
 describe('raw time 2 blocks', () => {
   test('indexed time', () => {
-    const result = time2Blocks.getBlockFromTimestamp(1694557398);
-    expect('block' in result && result.block).toBe(807385);
+    const result = time2Blocks.getBlockFromTimestamp(1693600252);
+    expect('block' in result && result.block).toBe(805784);
   });
 
   test('not indexed time', () => {
     const result = time2Blocks.getBlockFromTimestamp(1694557399);
-    expect(result).toEqual({ blockA: 807386, blockB: 808185 });
+    expect(result).toEqual({ blockA: 807384, blockB: 808184 });
   });
 
   test('not indexed time get blocks around', () => {
     const result = time2Blocks.getBlockFromTimestamp(1689768000);
     expect(result).toEqual({
-      blockA: 799384,
-      blockB: 800184
+      blockA: 799383,
+      blockB: 800183
     });
   });
 
