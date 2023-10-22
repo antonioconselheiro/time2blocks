@@ -152,9 +152,8 @@ export class Time2Blocks {
    *
    * @param timestamp reference
    * @param times array with all indexed timestamp
+   *
    * @returns indexed timestamp closest to the timestamp parameter
-   * 
-   * 🔥🔥🔥🔥🔥🔥
    */
   private getTimeIndexedFromTime(timestamp: number, times: string[]): number {
     if (times.length === 1) {
@@ -162,10 +161,19 @@ export class Time2Blocks {
     }
 
     const middle = Math.floor(times.length / 2);
-    if (Number(times[middle]) < timestamp) {
-      return this.getTimeIndexedFromTime(timestamp, times.splice(middle));
+    const timesClone = [].concat(times);
+    const blocksBefore = timesClone.splice(0, middle);
+    const blocksAfter = timesClone;
+
+    const majorTimeFromBeforeList = blocksBefore[blocksBefore.length -1];
+    const minorTimeFromAfterList = blocksAfter[0];
+
+    if (majorTimeFromBeforeList < timestamp && timestamp < minorTimeFromAfterList) {
+      return minorTimeFromAfterList;
+    } else if (Number(times[middle]) < timestamp) {
+      return this.getTimeIndexedFromTime(timestamp, blocksAfter);
     } else {
-      return this.getTimeIndexedFromTime(timestamp, times.splice(0, middle));
+      return this.getTimeIndexedFromTime(timestamp, blocksBefore);
     }
   }
 
