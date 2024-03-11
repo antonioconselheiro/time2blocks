@@ -39,9 +39,9 @@ export class Time2BlocksHistoryLoader {
   private readonly mempoolApi = 'https://mempool.space/api/';
 
   private mempoolConn: Time2BlockMempoolConn | null = null;
-  lastBlock: { block: number, time: string } | null = null;
-  readonly firstBlock: { block: number, time: string } = {
-    block: 1, time: '1230983705'
+  lastBlock: { block: number, time: number } | null = null;
+  readonly firstBlock: { block: number, time: number } = {
+    block: 1, time: 1230983705
   };
 
   listening = false;
@@ -63,7 +63,7 @@ export class Time2BlocksHistoryLoader {
     this.updateHistoryIndex();
   }
 
-  addBlock(block: number, time: string): void {
+  addBlock(block: number, time: number): void {
     if (!this.lastBlock || block > this.lastBlock.block) {
       this.lastBlock = { block, time };
     }
@@ -81,7 +81,7 @@ export class Time2BlocksHistoryLoader {
   listenMempool(): void {
     this.listening = true;
     this.mempoolConn = new Time2BlockMempoolConn();
-    this.mempoolConn.onBlock(block => this.addBlock(block.height, block.time))
+    this.mempoolConn.onBlock(block => this.addBlock(block.height, Number(block.time)))
   }
 
   listen(): void {
@@ -113,7 +113,7 @@ export class Time2BlocksHistoryLoader {
     const response = await fetch(`${this.mempoolApi}v1/blocks/${baseHeight}`);
     const blocksList: Array<{ height: string, timestamp: string }> = await response.json();
 
-    blocksList.forEach(({ height, timestamp }) => this.addBlock(Number(height), timestamp));
+    blocksList.forEach(({ height, timestamp }) => this.addBlock(Number(height), Number(timestamp)));
     this.updateHistoryIndex();
   }
 
