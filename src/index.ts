@@ -36,7 +36,6 @@ export class Time2Blocks {
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
-    // macgyverism
     if (this.loading) {
       const loading = this.loading;
       const newLoading = this.loading = new Promise<number | null>(resolve => {
@@ -63,6 +62,7 @@ export class Time2Blocks {
 
       return Promise.resolve(v);
     });
+
     return newLoading;
   }
 

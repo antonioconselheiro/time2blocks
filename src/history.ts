@@ -81,7 +81,7 @@ export class Time2BlocksHistoryLoader {
   listenMempool(): void {
     this.listening = true;
     this.mempoolConn = new Time2BlockMempoolConn();
-    this.mempoolConn.onBlock(block => this.addBlock(block.height, block.timestamp))
+    this.mempoolConn.onBlock(block => this.addBlock(block.height, block.time))
   }
 
   listen(): void {
@@ -265,7 +265,7 @@ export class WebSocketFacade {
 export abstract class Time2BlockConnection {
   private subscriptions = [];
 
-  onBlock(sub: (block: { height: number, timestamp: string }) => void) {
+  onBlock(sub: (block: { height: number, time: string }) => void) {
     this.subscriptions.push(sub);
   }
 
