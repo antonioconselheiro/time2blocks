@@ -280,21 +280,27 @@ export abstract class Time2BlockConnection {
 export class Time2BlockMempoolConn extends Time2BlockConnection {
 
   protected readonly link = 'wss://mempool.space/api/v1/ws';
-
   protected client?: WebSocketFacade;
+  protected connected = false;
 
   constructor() {
     super();
     this.connect();
+  }
+  
+  connect(): void {
+    this.connected = true;
+    this.client = new WebSocketFacade(this.link);
     this.client.onOpen(() => this.onConnect());
   }
 
-  connect(): void {
-    this.client = new WebSocketFacade(this.link);
-  }
-
   protected onConnect(): void {
-    this.client.onClose(() => this.onClose());
+    this.client.onClose(() => {
+      if (this.connected) {
+        this.connect();
+      }
+    });
+
     this.client.onMessage(packet => {
       if (typeof packet === 'string') {
         packet = JSON.parse(packet);
@@ -308,29 +314,27 @@ export class Time2BlockMempoolConn extends Time2BlockConnection {
   }
 
   protected blockSubscribe(): void {
-    this.client.send(JSON.stringify({ "action": "init" }));
-    this.client.send(JSON.stringify({ "action": "want", "data": ['blocks'] }));
+    this.client.send(JSON.stringify({ action: 'init' }));
+    this.client.send(JSON.stringify({ action: 'want', data: ['blocks'] }));
   }
 
   protected onMessage(res: any): void {
     if (res.block) {
       const { height, timestamp } = res.block;
-      this.emit({ height, time: String(timestamp) });
+      this.emit({ height, time: timestamp });
     } else if (res.blocks) {
       res.blocks.forEach(block => {
         const { height, timestamp } = block;
-        this.emit({ height, time: String(timestamp) });
+        this.emit({ height, time: timestamp });
       });
     }
   }
 
   close(): void {
+    this.connected = false;
     if (this.client) {
       this.client.close();
     }
-  }
-
-  private onClose(): void {
     this.client = null;
   }
 }
