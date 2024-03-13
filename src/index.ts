@@ -36,34 +36,19 @@ export class Time2Blocks {
   }
 
   async getFromTimestamp(timestamp: number): Promise<number | null> {
+
     if (this.loading) {
-      const loading = this.loading;
-      const newLoading = this.loading = new Promise<number | null>(resolve => {
-        loading.then(() => {
-          return this.loadFromTimestamp(timestamp).then((v) => {
-            if (newLoading === this.loading) {
-              this.loading = null;
-            }
-
-            resolve(v);
-            return Promise.resolve(v);
-          });
-        });
-      });
-
-      return newLoading;
+      await this.loading;
+      return this.getFromTimestamp(timestamp);
     }
 
-    const newLoading = this.loading = this.loadFromTimestamp(timestamp);
+    this.loading = this.loadFromTimestamp(timestamp);
     this.loading.then((v) => {
-      if (newLoading === this.loading) {
-        this.loading = null;
-      }
-
+      this.loading = null;
       return Promise.resolve(v);
     });
 
-    return newLoading;
+    return this.loading;
   }
 
   private async loadFromTimestamp(timestamp: number): Promise<number | null>  {
