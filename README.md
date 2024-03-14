@@ -32,6 +32,9 @@ Lib for Angular usage:
 
 [I can reference here if you create a wrapper lib for nextjs, vuejs or react.]
 
+## Example
+[View working example](https://antonioconselheiro.github.io/time2blocks-ngx/)
+
 ## Usage
 ### Sample code
 ```typescript
