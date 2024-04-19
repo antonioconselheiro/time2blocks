@@ -18,7 +18,7 @@ The main purpose of the library is to provide a means for nostr clients to enabl
 
 ## Installation
 
-For full lib (16mb, because include a grande file with a lot of block number and timestamp indexed), you must load the ```history.json``` file to load it, this is how install:
+For full lib (17mb, because include a big file with all blocks and they timestamp indexed), you must load the ```history.json``` file to load it, this is how install:
 
 ```npm install @belomonte/time2blocks --save```
 
