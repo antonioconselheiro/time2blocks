@@ -1,6 +1,6 @@
 FROM node:20
 
-RUN npm install jest gulp typescript -g
+RUN npm install jest typescript -g
 
 RUN apt update && \
     apt install -y jq && \
