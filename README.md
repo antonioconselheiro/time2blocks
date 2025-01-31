@@ -113,7 +113,7 @@ blocksFormat(80000, 'h [[Halvings]], [[block]] bb') will return: 3 Halvings, blo
 ![formats](https://raw.githubusercontent.com/antonioconselheiro/time2blocks/master/imgs/time2blocks.png)
 
 
-## Grow NOSTR
+## Grow Nostr
 To improve the library, it would be good:
  - if a way to search for which blocks were processed around one moment (a timestamp) or more than one moment was available in the mempool api;
  - be possible to include what the block was at the time of publication in NOSTR;
