@@ -1,17 +1,14 @@
-FROM node:20
+FROM node:22
 
 RUN npm install jest typescript -g
 
-RUN apt update && \
-    apt install -y jq && \
-    apt clean
+RUN apt update
+RUN apt install -y jq
+# Clean
+RUN apt clean
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /time2blocks
-
-COPY ./.gitconfig /root/.gitconfig
-COPY ./.ssh /root/.ssh
-RUN chmod 600 -R /root/.ssh
-RUN ssh-add -D && ssh-add /root/.ssh/id_ed25519 || true
 
 # Keyboard & Timezone
 ENV LANG=C.UTF-8

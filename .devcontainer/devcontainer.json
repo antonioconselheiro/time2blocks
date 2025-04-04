@@ -1,10 +1,11 @@
 {
-  "name": "Existing Docker Compose (Extend)",
+  "name": "Time2blocks Dev",
   "dockerComposeFile": [
     "docker-compose.yml"
   ],
   "service": "time2blocks-dev",
 	"workspaceFolder": "/time2blocks",
+	"postCreateCommand": "./.devcontainer/auth.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [
