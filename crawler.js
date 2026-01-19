@@ -1,7 +1,7 @@
 https://www.blockchain.com/explorer/blocks/btc?page=3
 var blocksToTime = {}
 function check(page = 1) {
-  fetch('https://www.blockchain.com/explorer/_next/data/d589423/blocks/btc.json?page=' + page + '&asset=btc')
+  fetch('https://www.blockchain.com/explorer/_next/data/c4a5e8d/blocks/btc.json?page=' + page + '&asset=btc')
   .then(response => {
     if (!response.ok) {
       throw new Error('A solicitação não teve sucesso');
@@ -18,7 +18,7 @@ function check(page = 1) {
   })
   .catch(error => {
     console.error('Houve um erro na solicitação:', error);
-      console.error('https://www.blockchain.com/explorer/_next/data/d589423/blocks/btc.json?page=' + page + '&asset=btc');
+      console.error('https://www.blockchain.com/explorer/_next/data/c4a5e8d/blocks/btc.json?page=' + page + '&asset=btc');
       setTimeout(() => check(page), 30000);
   });
 }
